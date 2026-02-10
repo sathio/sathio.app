@@ -5,10 +5,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:dio/dio.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/asset_paths.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/spacing.dart';
-import '../../../core/utils/extensions.dart';
 import '../onboarding_provider.dart';
 
 class QuickWinScreen extends ConsumerStatefulWidget {
@@ -30,7 +29,6 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
     });
 
     try {
-      // 1. Check/Request Location Permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -42,13 +40,11 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
         throw Exception("Turn on location in settings");
       }
 
-      // 2. Get Current Position
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.medium,
       );
 
-      // 3. Get City Name (Reverse Geocoding)
-      String cityName = "Aapke shehar";
+      String cityName = "Your city";
       try {
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
@@ -64,7 +60,6 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
         debugPrint("Geocoding Error: $e");
       }
 
-      // 4. Fetch Weather (OpenMeteo)
       final response = await _dio.get(
         'https://api.open-meteo.com/v1/forecast',
         queryParameters: {
@@ -80,7 +75,7 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
 
         if (mounted) {
           setState(() {
-            _weatherResult = "$cityName mein $tempInt°C hai ☀️";
+            _weatherResult = "It is $tempInt°C in $cityName ☀️";
             _isLoading = false;
             _isCompleted = true;
           });
@@ -109,121 +104,132 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                children: [
-                  const SizedBox(height: AppSpacing.xl),
-
-                  // Header
-                  Text(
-                    'Chalo ek choti si\nmadad karte hain!',
-                    style: context.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimaryLight,
-                    ),
-                    textAlign: TextAlign.center,
-                  ).animate().fadeIn().slideY(begin: -0.2, end: 0),
-
-                  const SizedBox(height: AppSpacing.md),
-
-                  Text(
-                    'See how easy it is to use Sathio',
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondaryLight,
-                    ),
-                    textAlign: TextAlign.center,
-                  ).animate().fadeIn(delay: 200.ms),
-
-                  const Spacer(),
-
-                  // Task Card
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-                    child: _isCompleted ? _buildResultCard() : _buildTaskCard(),
+      backgroundColor: AppColors.orange,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Top 30%: Orange header
+          Expanded(
+            flex: 3,
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Magic',
+                        style: GoogleFonts.poppins(
+                          fontSize: 64,
+                          height: 1.0,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFFBF4E2),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Let\'s do a small task!',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
+                ),
+              ),
+            ),
+          ),
 
-                  const Spacer(),
-
-                  // Footer Button
-                  AnimatedOpacity(
-                    opacity: _isCompleted ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isCompleted
-                            ? () {
-                                debugPrint("QuickWin Continue Pressed");
-                                ref
-                                    .read(onboardingProvider.notifier)
-                                    .nextPage();
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          disabledBackgroundColor: AppColors.gray300,
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+          // Bottom 70%: Cream panel
+          Expanded(
+            flex: 7,
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFBF4E2),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Main content centered
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            child: _isCompleted
+                                ? _buildResultCard()
+                                : _buildTaskCard(),
                           ),
-                        ),
-                        child: const Text(
-                          'AB ASLI KAAM SHURU KAREIN',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: AppSpacing.lg),
+                  // FAB — bottom right (only when completed)
+                  if (_isCompleted)
+                    Positioned(
+                      bottom: 30,
+                      right: 30,
+                      child:
+                          GestureDetector(
+                            onTap: () {
+                              ref.read(onboardingProvider.notifier).nextPage();
+                            },
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.black,
+                                size: 28,
+                              ),
+                            ),
+                          ).animate().scale(
+                            duration: 300.ms,
+                            curve: Curves.easeOutBack,
+                          ),
+                    ),
 
-                  // Progress Dots (6 of 7)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(7, (index) {
-                      final isActive = index == 5; // 6th Screen
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        height: 8,
-                        width: isActive ? 24 : 8,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.primary
-                              : AppColors.gray300,
-                          borderRadius: BorderRadius.circular(4),
+                  // Confetti Overlay
+                  if (_isCompleted)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Lottie.asset(
+                          AssetPaths.successAnim,
+                          repeat: false,
+                          fit: BoxFit.cover,
                         ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
+                      ),
+                    ),
                 ],
               ),
             ),
-
-            // Confetti Overlay
-            if (_isCompleted)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: Lottie.asset(
-                    AssetPaths.successAnim,
-                    repeat: false,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -236,15 +242,14 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: AppColors.orange.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
           ],
-          border: Border.all(color: AppColors.gray200),
         ),
         child: Column(
           children: [
@@ -258,33 +263,33 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Aaj ka mausam jaano',
-              style: context.textTheme.titleLarge?.copyWith(
+              'Check today\'s weather',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimaryLight,
+                color: AppColors.orange,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Tap to check weather',
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondaryLight,
-              ),
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 24),
             if (_isLoading)
-              const CircularProgressIndicator(color: AppColors.primary)
+              const CircularProgressIndicator(color: AppColors.orange)
             else
               Text(
                     'TAP HERE',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: AppColors.orange,
+                      fontWeight: FontWeight.w900,
                       letterSpacing: 1.2,
                     ),
                   )
                   .animate(onPlay: (c) => c.repeat())
-                  .shimmer(duration: 2.seconds, color: AppColors.primary),
+                  .shimmer(duration: 2.seconds, color: AppColors.orange),
           ],
         ),
       ),
@@ -296,12 +301,12 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4), // Light green bg
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(32),
         border: Border.all(color: Colors.green.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withValues(alpha: 0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -312,8 +317,9 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
           const Icon(Icons.check_circle, size: 60, color: Colors.green),
           const SizedBox(height: 16),
           Text(
-            _weatherResult, // Real result
-            style: context.textTheme.headlineSmall?.copyWith(
+            _weatherResult,
+            style: GoogleFonts.poppins(
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.green.shade800,
             ),
@@ -321,10 +327,11 @@ class _QuickWinScreenState extends ConsumerState<QuickWinScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Dekha! Kitna aasan tha!',
-            style: context.textTheme.titleMedium?.copyWith(
-              color: Colors.green.shade600,
+            'See! How easy it was!',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
               fontWeight: FontWeight.w600,
+              color: Colors.green.shade600,
             ),
           ),
         ],

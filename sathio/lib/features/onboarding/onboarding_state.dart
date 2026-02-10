@@ -3,14 +3,16 @@ class OnboardingState {
   final bool isCompleted;
   final String? selectedLanguage;
   final String? selectedPurpose;
-  final List<String> selectedUseCases; // New field
+  final List<String> selectedUseCases;
+  final String? userName; // New field
 
   const OnboardingState({
     this.currentIndex = 0,
     this.isCompleted = false,
     this.selectedLanguage,
     this.selectedPurpose,
-    this.selectedUseCases = const [], // Default empty list
+    this.selectedUseCases = const [],
+    this.userName,
   });
 
   OnboardingState copyWith({
@@ -19,6 +21,7 @@ class OnboardingState {
     String? selectedLanguage,
     String? selectedPurpose,
     List<String>? selectedUseCases,
+    String? userName,
   }) {
     return OnboardingState(
       currentIndex: currentIndex ?? this.currentIndex,
@@ -26,6 +29,7 @@ class OnboardingState {
       selectedLanguage: selectedLanguage ?? this.selectedLanguage,
       selectedPurpose: selectedPurpose ?? this.selectedPurpose,
       selectedUseCases: selectedUseCases ?? this.selectedUseCases,
+      userName: userName ?? this.userName,
     );
   }
 }

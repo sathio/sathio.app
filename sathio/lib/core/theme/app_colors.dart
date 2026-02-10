@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Brand Colors
   static const Color teal = Color(0xFF00BFA5); // Sathio Teal
-  static const Color orange = Color(0xFFFF9800); // Saffron Orange
+  static const Color orange = Color(0xFFF36D43); // Updated Saffron Orange
   static const Color blue = Color(0xFF1E3A5F); // Deep Blue
 
   // Semantic Colors

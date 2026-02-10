@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/asset_paths.dart';
-import '../../../core/theme/app_colors.dart';
+
 import '../../../core/theme/spacing.dart';
-import '../../../core/utils/extensions.dart';
 import '../onboarding_provider.dart';
 
 class OnboardingCompleteScreen extends ConsumerStatefulWidget {
@@ -25,7 +25,6 @@ class _OnboardingCompleteScreenState
   @override
   void initState() {
     super.initState();
-    // Auto-dismiss after 3 seconds
     _timer = Timer(const Duration(seconds: 3), _finishOnboarding);
   }
 
@@ -46,9 +45,9 @@ class _OnboardingCompleteScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
+      backgroundColor: const Color(0xFFFBF4E2), // Cream Background
       body: GestureDetector(
-        onTap: _finishOnboarding, // Tap anywhere to skip
+        onTap: _finishOnboarding,
         behavior: HitTestBehavior.opaque,
         child: Stack(
           children: [
@@ -59,7 +58,7 @@ class _OnboardingCompleteScreenState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Mascot (Logo) with Bounce Animation
+                    // Mascot
                     Image.asset(AssetPaths.logo, height: 120)
                         .animate(onPlay: (c) => c.repeat(reverse: true))
                         .scale(
@@ -75,10 +74,12 @@ class _OnboardingCompleteScreenState
 
                     // Title
                     Text(
-                      'Badhai ho!\nAb aap ready ho! 🎉',
-                      style: context.textTheme.headlineMedium?.copyWith(
+                      'Congratulations!\nYou are ready! 🎉',
+                      style: GoogleFonts.poppins(
+                        fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimaryLight,
+                        color: Colors.black87,
+                        height: 1.2,
                       ),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn().slideY(begin: 0.2, end: 0),
@@ -87,9 +88,11 @@ class _OnboardingCompleteScreenState
 
                     // Subtitle
                     Text(
-                      'Jab bhi madad chahiye,\nmain yahan hoon',
-                      style: context.textTheme.titleMedium?.copyWith(
-                        color: AppColors.textSecondaryLight,
+                      'Whenever you need help,\nI am here',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
@@ -118,8 +121,8 @@ class _OnboardingCompleteScreenState
               child: Center(
                 child: Text(
                   'Tap anywhere to start',
-                  style: TextStyle(
-                    color: AppColors.textSecondaryLight.withOpacity(0.5),
+                  style: GoogleFonts.poppins(
+                    color: Colors.black26,
                     fontSize: 12,
                   ),
                 ).animate().fadeIn(delay: 2.seconds),

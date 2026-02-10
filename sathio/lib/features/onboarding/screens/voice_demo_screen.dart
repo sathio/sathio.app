@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/spacing.dart';
-import '../../../core/utils/extensions.dart';
 import '../../../core/constants/asset_paths.dart';
 import '../onboarding_provider.dart';
 
@@ -22,7 +21,7 @@ class _VoiceDemoScreenState extends ConsumerState<VoiceDemoScreen> {
   bool _isListening = false;
   bool _hasSpoken = false;
   bool _isSuccess = false;
-  String _statusText = "Mic button dabao aur bolo:\n\"Namaste Sathio\"";
+  String _statusText = "Tap the mic and say:\n\"Namaste Sathio\"";
 
   @override
   void initState() {
@@ -31,19 +30,22 @@ class _VoiceDemoScreenState extends ConsumerState<VoiceDemoScreen> {
   }
 
   Future<void> _initTts() async {
-    await flutterTts.setLanguage("hi-IN");
-    await flutterTts.setSpeechRate(0.85); // Slower for clarity
-    await flutterTts.setPitch(1.0); // Natural pitch
-    await flutterTts.setVolume(1.0);
+    try {
+      await flutterTts.setLanguage("en-IN");
+      await flutterTts.setSpeechRate(0.85);
+      await flutterTts.setPitch(1.0);
+      await flutterTts.setVolume(1.0);
+    } catch (e) {
+      debugPrint("Error initializing TTS: $e");
+    }
   }
 
   Future<void> _startDemo() async {
     setState(() {
       _isListening = true;
-      _statusText = "Sun raha hoon...";
+      _statusText = "Listening...";
     });
 
-    // Simulate listening delay
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
@@ -54,8 +56,7 @@ class _VoiceDemoScreenState extends ConsumerState<VoiceDemoScreen> {
       _statusText = "Namaste Sathio";
     });
 
-    // Speak response
-    await flutterTts.speak("Namaste! Main sun sakta hoon. Bahut badhiya!");
+    await flutterTts.speak("Namaste! I can hear you. Great!");
 
     setState(() {
       _isSuccess = true;
@@ -71,206 +72,264 @@ class _VoiceDemoScreenState extends ConsumerState<VoiceDemoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Column(
-            children: [
-              const SizedBox(height: AppSpacing.xl),
-
-              Text(
-                'Dekho main kaise kaam karta hoon',
-                style: context.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimaryLight,
-                ),
-                textAlign: TextAlign.center,
-              ).animate().fadeIn().slideY(begin: -0.2, end: 0),
-
-              const Spacer(),
-
-              // Status Text / Instruction
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  _statusText,
-                  key: ValueKey(_statusText),
-                  style: context.textTheme.headlineSmall?.copyWith(
-                    fontWeight: _hasSpoken
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    color: _hasSpoken
-                        ? AppColors.primary
-                        : AppColors.textPrimaryLight,
-                    height: 1.3,
+      backgroundColor: AppColors.orange,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Top 30%: Orange header
+          Expanded(
+            flex: 3,
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Voice',
+                        style: GoogleFonts.poppins(
+                          fontSize: 64,
+                          height: 1.0,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFFBF4E2),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'See how I work',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
+            ),
+          ),
 
-              const SizedBox(height: AppSpacing.xxl),
-
-              // Mic Button / Animation Centerpiece
-              GestureDetector(
-                onTap: _isListening || _isSuccess ? null : _startDemo,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Outer Ripple (when listening)
-                    if (_isListening)
-                      Container(
-                            width: 200,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.primary.withOpacity(0.1),
+          // Bottom 70%: Cream panel
+          Expanded(
+            flex: 7,
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFBF4E2), // Cream
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Main content centered
+                  Center(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Status Text
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: Text(
+                                _statusText,
+                                key: ValueKey(_statusText),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 20,
+                                  fontWeight: _hasSpoken
+                                      ? FontWeight.bold
+                                      : FontWeight.w400,
+                                  color: _hasSpoken
+                                      ? AppColors.orange
+                                      : Colors.black87,
+                                  height: 1.3,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                          )
-                          .animate(onPlay: (c) => c.repeat())
-                          .scale(
-                            begin: const Offset(0.8, 0.8),
-                            end: const Offset(1.2, 1.2),
-                            duration: 1.seconds,
-                          )
-                          .fadeOut(duration: 1.seconds),
 
-                    // Main Button/Animation Container
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _isListening
-                            ? Colors.white
-                            : (_isSuccess ? Colors.green : AppColors.primary),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                (_isListening
-                                        ? AppColors.gray400
-                                        : (_isSuccess
-                                              ? Colors.green
-                                              : AppColors.primary))
-                                    .withOpacity(0.3),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
+                            const SizedBox(height: 48),
+
+                            // Mic Button
+                            GestureDetector(
+                              onTap: _isListening || _isSuccess
+                                  ? null
+                                  : _startDemo,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Outer Ripple
+                                  if (_isListening)
+                                    Container(
+                                          width: 200,
+                                          height: 200,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: AppColors.orange.withOpacity(
+                                              0.1,
+                                            ),
+                                          ),
+                                        )
+                                        .animate(onPlay: (c) => c.repeat())
+                                        .scale(
+                                          begin: const Offset(0.8, 0.8),
+                                          end: const Offset(1.2, 1.2),
+                                          duration: 1.seconds,
+                                        )
+                                        .fadeOut(duration: 1.seconds),
+
+                                  // Main Button
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _isListening
+                                          ? Colors.white
+                                          : (_isSuccess
+                                                ? Colors.green
+                                                : AppColors.orange),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color:
+                                              (_isListening
+                                                      ? Colors.black12
+                                                      : (_isSuccess
+                                                            ? Colors.green
+                                                            : AppColors.orange))
+                                                  .withOpacity(0.3),
+                                          blurRadius: 20,
+                                          spreadRadius: 5,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: _isListening
+                                          ? Lottie.asset(
+                                              AssetPaths.listeningAnim,
+                                              width: 80,
+                                            )
+                                          : (_isSuccess
+                                                ? const Icon(
+                                                    Icons.check,
+                                                    size: 60,
+                                                    color: Colors.white,
+                                                  ).animate().scale()
+                                                : const Icon(
+                                                    Icons.mic,
+                                                    size: 60,
+                                                    color: Colors.white,
+                                                  )),
+                                    ),
+                                  ),
+
+                                  // Success Anim Overlay
+                                  if (_isSuccess)
+                                    Positioned.fill(
+                                      child: Lottie.asset(
+                                        AssetPaths.successAnim,
+                                        repeat: false,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ).animate().scale(
+                              curve: Curves.easeOutBack,
+                              duration: 500.ms,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Footer Actions (Skip / Continue)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(30),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // Skip Text (Center if alone, Left if FAB exists)
+                          if (!_isSuccess)
+                            Expanded(
+                              child: Center(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    ref
+                                        .read(onboardingProvider.notifier)
+                                        .nextPage();
+                                  },
+                                  child: Text(
+                                    'Try later',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      color: AppColors.orange.withOpacity(0.7),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ).animate().fadeIn(delay: 1.seconds),
+                              ),
+                            )
+                          else
+                            const SizedBox(), // Spacer if needed
+                          // FAB (Right)
+                          if (_isSuccess)
+                            GestureDetector(
+                              onTap: () {
+                                ref
+                                    .read(onboardingProvider.notifier)
+                                    .nextPage();
+                              },
+                              child: Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_forward,
+                                  color: Colors.black,
+                                  size: 28,
+                                ),
+                              ),
+                            ).animate().scale(
+                              duration: 300.ms,
+                              curve: Curves.easeOutBack,
+                            ),
                         ],
                       ),
-                      child: Center(
-                        child: _isListening
-                            // Listening Anim
-                            ? Lottie.asset(AssetPaths.listeningAnim, width: 80)
-                            : (_isSuccess
-                                  // Success Check
-                                  ? const Icon(
-                                      Icons.check,
-                                      size: 60,
-                                      color: Colors.white,
-                                    ).animate().scale()
-                                  // Default Mic
-                                  : const Icon(
-                                      Icons.mic,
-                                      size: 60,
-                                      color: Colors.white,
-                                    )),
-                      ),
                     ),
-
-                    // Success Anim Overlay
-                    if (_isSuccess)
-                      Positioned.fill(
-                        child: Lottie.asset(
-                          AssetPaths.successAnim,
-                          repeat: false,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                  ],
-                ),
-              ).animate().scale(curve: Curves.easeOutBack, duration: 500.ms),
-
-              const Spacer(),
-
-              // Footer Buttons
-              Column(
-                children: [
-                  // Continue Button (Visible on Success)
-                  if (_isSuccess)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ref.read(onboardingProvider.notifier).nextPage();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 4,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: const Text(
-                          'AAGE BADHEIN',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ),
-                    ).animate().slideY(
-                      begin: 1,
-                      end: 0,
-                      curve: Curves.easeOutBack,
-                    ),
-
-                  const SizedBox(height: AppSpacing.md),
-
-                  // Skip Button (Hidden on Success)
-                  if (!_isSuccess)
-                    TextButton(
-                      onPressed: () {
-                        ref.read(onboardingProvider.notifier).nextPage();
-                      },
-                      child: Text(
-                        'Baad mein try karunga',
-                        style: TextStyle(
-                          color: AppColors.textSecondaryLight,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 1.seconds),
+                  ),
                 ],
               ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Progress Dots (4 of 7)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(7, (index) {
-                  final isActive = index == 3; // 4th Screen
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 8,
-                    width: isActive ? 24 : 8,
-                    decoration: BoxDecoration(
-                      color: isActive ? AppColors.primary : AppColors.gray300,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  );
-                }),
-              ),
-              const SizedBox(height: AppSpacing.md),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -65,6 +65,11 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(selectedUseCases: currentList);
   }
 
+  void setUserName(String name) {
+    // Optionally persist to Hive if needed, for now just state
+    state = state.copyWith(userName: name);
+  }
+
   Future<void> completeOnboarding() async {
     await _box.put(kOnboardingCompletedKey, true);
     state = state.copyWith(isCompleted: true);

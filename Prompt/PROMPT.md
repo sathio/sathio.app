@@ -16,6 +16,7 @@ Before we start building, please thoroughly analyze these documentation files in
 2. Read IMPLEMENTATION_PLAN.md - Technical architecture, tech stack, development phases
 3. Read PROJECT_CONTEXT.md - Brand philosophy, voice design, team values
 4. Read UI_UX.md - Design system, colors, typography, components, screens
+5. Read PRD1, PRD2, PRD3, PRD4, PRD5 and FINAL_PRD
 
 After reading all files, confirm you understand:
 - What Sathio is (voice-first vernacular AI assistant for India)

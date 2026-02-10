@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/spacing.dart';
-import '../../../core/utils/extensions.dart';
+import '../onboarding_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -18,7 +17,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   String? _selectedState;
   String? _selectedDistrict;
 
-  // Mock Data for States and Districts
   final Map<String, List<String>> _stateDistricts = {
     'Delhi': [
       'Central Delhi',
@@ -34,245 +32,346 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    final name = ref.read(onboardingProvider).userName;
+    if (name != null) {
+      _nameController.text = name;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
   }
 
   Future<void> _completeOnboarding() async {
-    // In a real app, save _nameController.text, _selectedState, _selectedDistrict
-    // Navigate to celebration screen which handles final completion logic
-    if (mounted) {
-      context.go('/onboarding-complete');
+    // Save name if changed
+    if (_nameController.text.isNotEmpty) {
+      ref.read(onboardingProvider.notifier).setUserName(_nameController.text);
     }
+    // Proceed to next step (UseCase)
+    ref.read(onboardingProvider.notifier).nextPage();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSpacing.xl),
-
-                // Header
-                Text(
-                  'Thoda apne baare mein\nbatao (Optional)',
-                  style: context.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimaryLight,
-                  ),
-                  textAlign: TextAlign.center,
-                ).animate().fadeIn().slideY(begin: -0.2, end: 0),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Profile Photo Placeholder
-                Center(
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: AppColors.gray200,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.person,
-                      size: 50,
-                      color: AppColors.gray500,
-                    ),
-                  ),
-                ).animate().scale(delay: 200.ms),
-
-                const SizedBox(height: AppSpacing.xxl),
-
-                // Name Input
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Aapka naam',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // State Dropdown
-                DropdownButtonFormField<String>(
-                  value: _selectedState,
-                  decoration: InputDecoration(
-                    labelText: 'Aap kahan rehte ho? (State)',
-                    prefixIcon: const Icon(Icons.map_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  items: _stateDistricts.keys.map((String state) {
-                    return DropdownMenuItem(value: state, child: Text(state));
-                  }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedState = newValue;
-                      _selectedDistrict = null; // Reset district
-                    });
-                  },
-                ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1, end: 0),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // District Dropdown (Conditional)
-                AnimatedOpacity(
-                  opacity: _selectedState != null ? 1.0 : 0.5,
-                  duration: const Duration(milliseconds: 300),
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedDistrict,
-                    decoration: InputDecoration(
-                      labelText: 'District',
-                      prefixIcon: const Icon(Icons.location_city),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      enabled: _selectedState != null,
-                    ),
-                    items: _selectedState != null
-                        ? _stateDistricts[_selectedState]!.map((
-                            String district,
-                          ) {
-                            return DropdownMenuItem(
-                              value: district,
-                              child: Text(district),
-                            );
-                          }).toList()
-                        : [],
-                    onChanged: _selectedState != null
-                        ? (newValue) {
-                            setState(() {
-                              _selectedDistrict = newValue;
-                            });
-                          }
-                        : null,
-                  ),
-                ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.1, end: 0),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // Helper Text
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
+      backgroundColor: AppColors.orange,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Top 25%: Orange header
+          Expanded(
+            flex: 3,
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.lightbulb_outline,
-                        size: 20,
-                        color: AppColors.primary,
+                      Text(
+                        'Profile',
+                        style: GoogleFonts.poppins(
+                          fontSize: 48,
+                          height: 1.0,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFFBF4E2),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'State select karne se local schemes dikhengi',
-                          style: context.textTheme.bodySmall?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tell us a little about yourself',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        '(Optional)',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.7),
                         ),
                       ),
                     ],
                   ),
-                ).animate().fadeIn(delay: 600.ms),
-
-                const SizedBox(height: AppSpacing.xxl),
-
-                // Save Button
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _completeOnboarding,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'SAVE KAREIN',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.5, end: 0),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // Skip Button
-                TextButton(
-                  onPressed: _completeOnboarding,
-                  child: Text(
-                    'BAAD MEIN (SKIP)',
-                    style: TextStyle(
-                      color: AppColors.textSecondaryLight,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 800.ms),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Progress Dots (7 of 7)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(7, (index) {
-                      final isActive = index == 6; // 7th Screen
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        height: 8,
-                        width: isActive ? 24 : 8,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.primary
-                              : AppColors.gray300,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      );
-                    }),
-                  ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+
+          // Bottom 75%: Cream panel
+          Expanded(
+            flex: 8,
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFBF4E2),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+              ),
+              child: Stack(
+                children: [
+                  // Form Content
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 40, 24, 120),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Profile Photo
+                        Center(
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.orange.withOpacity(0.2),
+                                width: 4,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              color: AppColors.orange.withOpacity(0.5),
+                            ),
+                          ),
+                        ).animate().scale(delay: 200.ms),
+
+                        const SizedBox(height: 32),
+
+                        // Name Input
+                        _buildLabel('Your Name'),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _nameController,
+                          style: GoogleFonts.poppins(fontSize: 16),
+                          decoration: _inputDecoration(
+                            prefixIcon: Icons.person_outline,
+                            hint: 'Enter your name',
+                          ),
+                        ).animate().fadeIn(delay: 300.ms),
+
+                        const SizedBox(height: 24),
+
+                        // State Dropdown
+                        _buildLabel('Where do you live? (State)'),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          value: _selectedState,
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                          decoration: _inputDecoration(
+                            prefixIcon: Icons.map_outlined,
+                            hint: 'Select State',
+                          ),
+                          items: _stateDistricts.keys.map((String state) {
+                            return DropdownMenuItem(
+                              value: state,
+                              child: Text(state),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              _selectedState = newValue;
+                              _selectedDistrict = null;
+                            });
+                          },
+                        ).animate().fadeIn(delay: 400.ms),
+
+                        const SizedBox(height: 24),
+
+                        // District Dropdown
+                        AnimatedOpacity(
+                          opacity: _selectedState != null ? 1.0 : 0.5,
+                          duration: const Duration(milliseconds: 300),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('District'),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                value: _selectedDistrict,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                                decoration: _inputDecoration(
+                                  prefixIcon: Icons.location_city,
+                                  hint: 'Select District',
+                                  enabled: _selectedState != null,
+                                ),
+                                items: _selectedState != null
+                                    ? _stateDistricts[_selectedState]!.map((
+                                        String district,
+                                      ) {
+                                        return DropdownMenuItem(
+                                          value: district,
+                                          child: Text(district),
+                                        );
+                                      }).toList()
+                                    : [],
+                                onChanged: _selectedState != null
+                                    ? (newValue) {
+                                        setState(() {
+                                          _selectedDistrict = newValue;
+                                        });
+                                      }
+                                    : null,
+                              ),
+                            ],
+                          ),
+                        ).animate().fadeIn(delay: 500.ms),
+
+                        const SizedBox(height: 24),
+
+                        // Helper Text
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.lightbulb_outline,
+                                size: 20,
+                                color: AppColors.orange,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Selecting state helps show local schemes',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: AppColors.orange,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ).animate().fadeIn(delay: 600.ms),
+                      ],
+                    ),
+                  ),
+
+                  // Bottom Actions
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Skip Button
+                          TextButton(
+                            onPressed: _completeOnboarding,
+                            child: Text(
+                              'Skip for now',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppColors.orange.withOpacity(0.7),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+
+                          // Save FAB
+                          GestureDetector(
+                            onTap: _completeOnboarding,
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.black,
+                                size: 28,
+                              ),
+                            ),
+                          ).animate().scale(
+                            duration: 300.ms,
+                            curve: Curves.easeOutBack,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.poppins(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Colors.black87,
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required IconData prefixIcon,
+    required String hint,
+    bool enabled = true,
+  }) {
+    return InputDecoration(
+      prefixIcon: Icon(prefixIcon, color: AppColors.orange),
+      hintText: hint,
+      hintStyle: GoogleFonts.poppins(color: Colors.black38),
+      filled: true,
+      fillColor: enabled ? Colors.white : Colors.grey.shade200,
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColors.orange, width: 2),
       ),
     );
   }

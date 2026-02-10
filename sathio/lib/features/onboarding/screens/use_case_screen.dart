@@ -1,249 +1,449 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/spacing.dart';
-import '../../../core/utils/extensions.dart';
 import '../onboarding_provider.dart';
 
-class UseCaseScreen extends ConsumerWidget {
+class UseCaseScreen extends ConsumerStatefulWidget {
   const UseCaseScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UseCaseScreen> createState() => _UseCaseScreenState();
+}
+
+class _UseCaseScreenState extends ConsumerState<UseCaseScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  // Configuration - Tuned for 70% Screen Height
+  static const double _itemExtent = 240.0;
+  static const double _minCardHeight = 110.0;
+  static const double _maxCardHeight = 300.0;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final onboardingState = ref.watch(onboardingProvider);
+
+    // Dynamic padding calculation removed here as it is handled in LayoutBuilder below
 
     final useCases = [
       {
         'id': 'govt',
-        'icon': '📄',
-        'label': 'Sarkari kaam',
-        'sub': 'Aadhaar, PAN, Ration',
+        'title': 'Government',
+        'items': ['Adhaar', 'Pan', 'Ration'],
       },
       {
         'id': 'bills',
-        'icon': '💡',
-        'label': 'Bill Payment',
-        'sub': 'Bijli, Mobile, Gas',
+        'title': 'Pay Bills',
+        'items': ['Electric', 'Mobile', 'Gas'],
       },
       {
         'id': 'health',
-        'icon': '💊',
-        'label': 'Health jaankari',
-        'sub': 'Doctors, Schemes',
+        'title': 'Health',
+        'items': ['Doctors', 'Schemes', 'Others'],
       },
       {
-        'id': 'edu',
-        'icon': '📚',
-        'label': 'Padhai mein madad',
-        'sub': 'Scholarships, Jobs',
+        'id': 'education',
+        'title': 'Education',
+        'items': ['Scholarships', 'Jobs', 'Updates'],
       },
       {
-        'id': 'finance',
-        'icon': '💰',
-        'label': 'Loan/Banking',
-        'sub': 'Bank account, Loans',
+        'id': 'bank',
+        'title': 'Bank',
+        'items': ['Bank Account', 'Loans', 'Pension'],
       },
-      {'id': 'other', 'icon': '❓', 'label': 'Kuch aur', 'sub': 'General help'},
+      {
+        'id': 'others',
+        'title': 'Others',
+        'items': ['General Help', 'Information'],
+      },
     ];
 
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: AppSpacing.xl),
-
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Text(
-                'Aap Sathio se kya karna chahte ho?',
-                style: context.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimaryLight,
-                ),
-                textAlign: TextAlign.center,
-              ).animate().fadeIn().slideY(begin: -0.2, end: 0),
+      backgroundColor: AppColors.orange,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 1. Upper Half: Orange Background with Centered Text
+          Expanded(
+            flex: 3,
+            child: Center(
+              child: _UseCaseHeader(userName: onboardingState.userName),
             ),
+          ),
 
-            const SizedBox(height: AppSpacing.md),
+          // 2. Lower Half: Scrollable Body
+          Expanded(
+            flex: 7,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double viewportHeight = constraints.maxHeight;
+                final double verticalPadding =
+                    (viewportHeight / 2) - (_itemExtent / 2);
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Text(
-                '(Select all that apply)',
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondaryLight,
-                ),
-              ).animate().fadeIn(delay: 200.ms),
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Use Case Grid
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12, // Tighter spacing
-                  childAspectRatio: 1.1, // Wider cards
-                ),
-                itemCount: useCases.length,
-                itemBuilder: (context, index) {
-                  final useCase = useCases[index];
-                  final isSelected = onboardingState.selectedUseCases.contains(
-                    useCase['id'],
-                  );
-
-                  return GestureDetector(
-                        onTap: () {
-                          ref
-                              .read(onboardingProvider.notifier)
-                              .toggleUseCase(useCase['id']!);
+                return Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFBF4E2), // Cream Background
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(60),
+                    ),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: Stack(
+                    children: [
+                      // The Renderer
+                      AnimatedBuilder(
+                        animation: _scrollController,
+                        builder: (context, child) {
+                          return _buildScrollableContent(
+                            context,
+                            useCases,
+                            onboardingState,
+                            verticalPadding,
+                            viewportHeight,
+                          );
                         },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary.withValues(alpha: 0.1)
-                                : Colors.white,
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.gray200,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              if (isSelected)
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.2,
+                      ),
+
+                      // The Driver
+                      ListView.builder(
+                        controller: _scrollController,
+                        physics: const SnappingScrollPhysics(
+                          itemHeight: _itemExtent,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: verticalPadding,
+                        ),
+                        itemCount: useCases.length,
+                        itemExtent: _itemExtent,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              ref
+                                  .read(onboardingProvider.notifier)
+                                  .toggleUseCase(
+                                    useCases[index]['id'] as String,
+                                  );
+                            },
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(color: Colors.transparent),
+                          );
+                        },
+                      ),
+
+                      // FAB Overlay
+                      Positioned(
+                        bottom: 30,
+                        right: 30,
+                        child: onboardingState.selectedUseCases.isNotEmpty
+                            ? GestureDetector(
+                                onTap: () {
+                                  ref
+                                      .read(onboardingProvider.notifier)
+                                      .nextPage();
+                                },
+                                child: Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                                  child: const Icon(
+                                    Icons.arrow_forward,
+                                    color: Colors.black,
+                                    size: 28,
+                                  ),
                                 ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                useCase['icon']!,
-                                style: const TextStyle(fontSize: 32),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                useCase['label']!,
-                                style: context.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: AppColors.textPrimaryLight,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                useCase['sub']!,
-                                style: context.textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondaryLight,
-                                  fontSize: 11,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(delay: (100 * index).ms)
-                      .slideY(begin: 0.2, end: 0);
-                },
+                              ).animate().scale(
+                                duration: 300.ms,
+                                curve: Curves.easeOutBack,
+                              )
+                            : const SizedBox(),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScrollableContent(
+    BuildContext context,
+    List<Map<String, Object>> useCases,
+    onboardingState,
+    double verticalPadding,
+    double viewportHeight,
+  ) {
+    // FIX: Do not return SizedBox if no clients. Render initial state at offset 0.
+    final double scrollOffset = _scrollController.hasClients
+        ? _scrollController.offset
+        : 0.0;
+
+    // Viewport comes from LayoutBuilder now
+    final double centerOffset = viewportHeight / 2;
+
+    List<Widget> cardWidgets = [];
+
+    for (int i = 0; i < useCases.length; i++) {
+      final double itemCenterY =
+          (i * _itemExtent) + (_itemExtent / 2) + verticalPadding;
+      final double distFromCenter = (itemCenterY - scrollOffset - centerOffset)
+          .abs();
+
+      // Curve matches item extent for natural scaling
+      final double normalizedDist = (distFromCenter / 240).clamp(0.0, 1.0);
+
+      final double t = 1.0 - normalizedDist;
+      final double curvedT = Curves.easeOutCubic.transform(t);
+
+      // Height Calculation
+      final double currentHeight =
+          _minCardHeight + (_maxCardHeight - _minCardHeight) * curvedT;
+
+      const double currentWidthScale = 1.0;
+
+      // Opacity: User requested removing fade, so keeping it solid
+      const double currentOpacity = 1.0;
+
+      final double drawTop = (i * _itemExtent) + verticalPadding - scrollOffset;
+      final double drawY = drawTop + (_itemExtent - currentHeight) / 2;
+
+      // Skip rendering items far off screen (add buffer)
+      if (drawY > viewportHeight + 50 || drawY + currentHeight < -50) continue;
+
+      cardWidgets.add(
+        Positioned(
+          top: drawY,
+          left: 24,
+          right: 24,
+          height: currentHeight,
+          child: Transform.scale(
+            scaleX: currentWidthScale,
+            alignment: Alignment.center,
+            child: Opacity(
+              opacity: currentOpacity,
+              child: UseCaseCardItem(
+                useCase: useCases[i],
+                isSelected: onboardingState.selectedUseCases.contains(
+                  useCases[i]['id'],
+                ),
+                onTap: () => ref
+                    .read(onboardingProvider.notifier)
+                    .toggleUseCase(useCases[i]['id'] as String),
+                isExpanded: curvedT > 0.8, // Only expand if very central
+                focusValue: curvedT,
               ),
             ),
+          ),
+        ),
+      );
+    }
 
-            // Personalization Message (if 1+ selected)
-            if (onboardingState.selectedUseCases.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Text(
-                  "Main aapke liye ready ho jaunga! 🚀",
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ).animate().fadeIn().slideY(begin: 0.5, end: 0),
-              ),
+    return Stack(children: cardWidgets);
+  }
+}
 
-            const SizedBox(height: AppSpacing.md),
+class UseCaseCardItem extends StatelessWidget {
+  final Map<String, Object> useCase;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isExpanded;
+  final double focusValue;
 
-            // Continue Button (Always visible but disabled if empty, or only visible if selected? Requirement says "Continue button")
-            // Requirement doesn't strictly say logic, but distinct from "appears on selection".
-            // Let's make it appear or enable on selection for better UX.
-            Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: onboardingState.selectedUseCases.isNotEmpty
-                          ? () {
-                              ref.read(onboardingProvider.notifier).nextPage();
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        disabledBackgroundColor: AppColors.gray300,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'AAGE BADHEIN',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-                .animate(
-                  target: onboardingState.selectedUseCases.isNotEmpty ? 1 : 0,
-                )
-                .fadeIn(),
+  const UseCaseCardItem({
+    super.key, // Added super.key for best practice
+    required this.useCase,
+    required this.isSelected,
+    required this.onTap,
+    required this.isExpanded,
+    required this.focusValue,
+  });
 
-            // Progress Dots (3 of 7)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(7, (index) {
-                  final isActive = index == 2; // 3rd Screen
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 8,
-                    width: isActive ? 24 : 8,
-                    decoration: BoxDecoration(
-                      color: isActive ? AppColors.primary : AppColors.gray300,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  );
-                }),
-              ),
+  @override
+  Widget build(BuildContext context) {
+    final items = useCase['items'] as List<String>;
+    final textColor = const Color(0xFFE65100);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: isExpanded ? 24 : 16,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          border: isSelected
+              ? Border.all(color: AppColors.orange, width: 3)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.orange.withOpacity(0.15 * focusValue),
+              blurRadius: 16 * focusValue,
+              offset: Offset(0, 8 * focusValue),
             ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    useCase['title'] as String,
+                    style: GoogleFonts.poppins(
+                      fontSize: 20 + (4 * focusValue),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.orange,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  const Icon(Icons.check_circle, color: AppColors.orange),
+              ],
+            ),
+
+            if (isExpanded) ...[
+              const Spacer(),
+              for (var item in items)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 4,
+                        backgroundColor: AppColors.orange,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        item,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          color: textColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const Spacer(),
+            ],
           ],
         ),
       ),
     );
+  }
+}
+
+class _UseCaseHeader extends StatelessWidget {
+  final String? userName;
+  const _UseCaseHeader({this.userName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      // Removed top/bottom padding to let the parent Center widget handle alignment
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // Use minimum size for centering
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            userName != null && userName!.isNotEmpty ? userName! : 'User',
+            style: GoogleFonts.poppins(
+              fontSize: 64,
+              height: 1.0,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFFFBF4E2),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'What can I do for you?',
+            style: GoogleFonts.poppins(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SnappingScrollPhysics extends ScrollPhysics {
+  final double itemHeight;
+
+  const SnappingScrollPhysics({super.parent, required this.itemHeight});
+
+  @override
+  SnappingScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return SnappingScrollPhysics(
+      parent: buildParent(ancestor),
+      itemHeight: itemHeight,
+    );
+  }
+
+  @override
+  Simulation? createBallisticSimulation(
+    ScrollMetrics position,
+    double velocity,
+  ) {
+    // If we're out of range, defer to parent (bouncing/clamping)
+    if ((velocity <= 0.0 && position.pixels <= position.minScrollExtent) ||
+        (velocity >= 0.0 && position.pixels >= position.maxScrollExtent)) {
+      return super.createBallisticSimulation(position, velocity);
+    }
+
+    final Tolerance tolerance = this.toleranceFor(position);
+    final double target = _getTargetPixels(position, velocity, tolerance);
+
+    if (target != position.pixels) {
+      return ScrollSpringSimulation(
+        spring,
+        position.pixels,
+        target,
+        velocity,
+        tolerance: tolerance,
+      );
+    }
+    return null;
+  }
+
+  double _getTargetPixels(
+    ScrollMetrics position,
+    double velocity,
+    Tolerance tolerance,
+  ) {
+    double page = position.pixels / itemHeight;
+    if (velocity < -tolerance.velocity) {
+      page -= 0.5;
+    } else if (velocity > tolerance.velocity) {
+      page += 0.5;
+    }
+    return page.roundToDouble() * itemHeight;
   }
 }

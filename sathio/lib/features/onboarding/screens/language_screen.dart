@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/spacing.dart';
-import '../../../core/utils/extensions.dart';
 import '../onboarding_provider.dart';
 
 class LanguageScreen extends ConsumerStatefulWidget {
@@ -17,29 +16,66 @@ class LanguageScreen extends ConsumerStatefulWidget {
 class _LanguageScreenState extends ConsumerState<LanguageScreen> {
   final FlutterTts flutterTts = FlutterTts();
 
+  // Greetings for animation
+  final List<String> greetings = [
+    'HELLO',
+    'नमस्ते',
+    'নমস্কার',
+    'வணக்கம்',
+    'नमस्कार',
+  ];
+
+  int _currentGreetingIndex = 0;
+
   @override
   void initState() {
     super.initState();
-    _initTts();
+    // Initialize TTS after the frame to avoid blocking UI
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initTts();
+    });
+    _startGreetingAnimation();
+  }
+
+  void _startGreetingAnimation() {
+    // Use a Timer instead of Future.doWhile for better control and less risk of loops
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _currentGreetingIndex =
+              (_currentGreetingIndex + 1) % greetings.length;
+        });
+        _startGreetingAnimation();
+      }
+    });
   }
 
   Future<void> _initTts() async {
-    await flutterTts.setLanguage("hi-IN");
-    await flutterTts.setSpeechRate(0.5);
-    await flutterTts.setVolume(1.0);
+    // Run in background / non-blocking if possible, though flutter_tts uses platform channel
+    // which is async by default. The key is not to await it in initState.
+    try {
+      await flutterTts.setLanguage("hi-IN");
+      await flutterTts.setSpeechRate(0.5);
+      await flutterTts.setVolume(1.0);
+    } catch (e) {
+      debugPrint("Error initializing TTS: $e");
+    }
   }
 
   Future<void> _speak(String text, String languageCode) async {
-    // Attempt to set the language for TTS if possible, though mostly standard Hindi voice might be used for all for now
-    // In a real app, we'd check availability.
-    // Mapping rudimentary codes for demo
-    String locale = 'hi-IN';
-    if (languageCode == 'bn') locale = 'bn-IN';
-    if (languageCode == 'ta') locale = 'ta-IN';
-    if (languageCode == 'mr') locale = 'mr-IN';
-
-    // Check if language is available (optional optimization)
-    // await flutterTts.setLanguage(locale);
+    await flutterTts.stop();
+    // Basic mapping for demo purposes
+    // In production, check available languages
+    if (languageCode == 'hi')
+      await flutterTts.setLanguage('hi-IN');
+    else if (languageCode == 'bn')
+      await flutterTts.setLanguage('bn-IN');
+    else if (languageCode == 'ta')
+      await flutterTts.setLanguage('ta-IN');
+    else if (languageCode == 'mr')
+      await flutterTts.setLanguage('mr-IN');
+    else
+      await flutterTts.setLanguage('en-IN');
 
     await flutterTts.speak(text);
   }
@@ -54,267 +90,241 @@ class _LanguageScreenState extends ConsumerState<LanguageScreen> {
   Widget build(BuildContext context) {
     final onboardingState = ref.watch(onboardingProvider);
 
-    // Data for the 4 languages
     final languages = [
-      {
-        'code': 'hi',
-        'name': 'Hindi',
-        'native': 'हिंदी',
-        'flag': '🇮🇳',
-        'speak': 'Main Hindi mein baat kar sakta hoon',
-      },
-      {
-        'code': 'bn',
-        'name': 'Bengali',
-        'native': 'বাংলা',
-        'flag': '🇮🇳',
-        'speak': 'Aami Bangla e kotha bolte pari', // Approximation
-      },
-      {
-        'code': 'ta',
-        'name': 'Tamil',
-        'native': 'தமிழ்',
-        'flag': '🇮🇳',
-        'speak': 'Naan Tamilil pesuven', // Approximation
-      },
-      {
-        'code': 'mr',
-        'name': 'Marathi',
-        'native': 'मराठी',
-        'flag': '🇮🇳',
-        'speak': 'Mi Marathi bolu shakte', // Approximation
-      },
+      {'code': 'en', 'name': 'English', 'native': 'English', 'greet': 'Hello'},
+      {'code': 'hi', 'name': 'Hindi', 'native': 'हिंदी', 'greet': 'नमस्ते'},
+      {'code': 'bn', 'name': 'Bengali', 'native': 'বাংলা', 'greet': 'নমস্কার'},
+      {'code': 'ta', 'name': 'Tamil', 'native': 'தமிழ்', 'greet': 'வணக்கம்'},
+      {'code': 'mr', 'name': 'Marathi', 'native': 'मराठी', 'greet': 'नमस्कार'},
     ];
 
     return Scaffold(
-      backgroundColor: context.colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: AppSpacing.xl),
-
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      backgroundColor: const Color(0xFFF36D43), // Orange Background
+      body: Stack(
+        children: [
+          // Header Content
+          // Header Content
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: SafeArea(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'Kaunsi bhasha mein baat karein?',
-                    style: context.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimaryLight,
-                    ),
-                    textAlign: TextAlign.center,
-                  ).animate().fadeIn().slideY(begin: -0.2, end: 0),
-                  const SizedBox(height: 8),
-                  Text(
-                    '(Which language should we speak in?)',
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondaryLight,
-                    ),
-                  ).animate().fadeIn(delay: 200.ms),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xl),
-
-            // Card Grid
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.85, // Taller cards
-                ),
-                itemCount: languages.length,
-                itemBuilder: (context, index) {
-                  final language = languages[index];
-                  final isSelected =
-                      onboardingState.selectedLanguage == language['code'];
-
-                  return GestureDetector(
-                        onTap: () async {
-                          ref
-                              .read(onboardingProvider.notifier)
-                              .selectLanguage(language['code']!);
-                          await _speak(language['speak']!, language['code']!);
-                        },
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              width: double.infinity,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.secondary.withValues(
-                                        alpha: 0.1,
-                                      ) // Teal tint
-                                    : Colors.white,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AppColors
-                                            .secondary // Teal border
-                                      : AppColors.gray200,
-                                  width: isSelected ? 3 : 1.5,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: isSelected
-                                        ? AppColors.secondary.withValues(
-                                            alpha: 0.2,
-                                          )
-                                        : AppColors.gray200,
-                                    offset: const Offset(0, 4),
-                                    blurRadius: isSelected ? 8 : 0,
+                  // Animated Greeting
+                  SizedBox(
+                    height: 60,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 500),
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                      child: Text(
+                        greetings[_currentGreetingIndex],
+                        key: ValueKey<int>(_currentGreetingIndex),
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFFFF0E5),
+                          height: 1.0,
+                          shadows: _currentGreetingIndex >= 2
+                              ? [
+                                  const Shadow(
+                                    offset: Offset(-1, -1),
+                                    color: Color(0xFFFFF0E5),
                                   ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    language['flag']!,
-                                    style: const TextStyle(fontSize: 48),
+                                  const Shadow(
+                                    offset: Offset(1, -1),
+                                    color: Color(0xFFFFF0E5),
                                   ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    language['native']!,
-                                    style: context.textTheme.headlineSmall
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.textPrimaryLight,
-                                        ),
+                                  const Shadow(
+                                    offset: Offset(1, 1),
+                                    color: Color(0xFFFFF0E5),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    language['name']!,
-                                    style: context.textTheme.bodyMedium
-                                        ?.copyWith(
-                                          color: AppColors.textSecondaryLight,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                  const Shadow(
+                                    offset: Offset(-1, 1),
+                                    color: Color(0xFFFFF0E5),
                                   ),
-                                ],
-                              ),
-                            ),
-
-                            // Checkmark Badge
-                            if (isSelected)
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.secondary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                ).animate().scale(curve: Curves.elasticOut),
-                              ),
-
-                            // Confetti/Sparkle Effect (Simulated with simple scaling icon for now)
-                            if (isSelected)
-                              Positioned(
-                                top: -10,
-                                right: -10,
-                                child:
-                                    const Icon(
-                                          Icons.auto_awesome,
-                                          color: AppColors.primary,
-                                          size: 30,
-                                        )
-                                        .animate()
-                                        .scale(
-                                          duration: 400.ms,
-                                          curve: Curves.easeOutBack,
-                                        )
-                                        .fadeOut(delay: 500.ms),
-                              ),
-                          ],
-                        ),
-                      )
-                      .animate()
-                      .fadeIn(delay: (100 * index).ms)
-                      .slideY(begin: 0.2, end: 0);
-                },
-              ),
-            ),
-
-            // Footer Section
-            if (onboardingState.selectedLanguage != null)
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ref.read(onboardingProvider.notifier).nextPage();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary, // Teal button
-                          foregroundColor: Colors.white,
-                          elevation: 4,
-                          shadowColor: AppColors.secondary.withValues(
-                            alpha: 0.4,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: const Text(
-                          'AAGE BADHEIN', // Continue
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
+                                ]
+                              : [],
+                          textStyle: const TextStyle(
+                            fontFamilyFallback: [
+                              'NotoSansDevanagari',
+                              'NotoSansBengali',
+                              'NotoSansTamil',
+                            ],
                           ),
                         ),
                       ),
-                    ).animate().slideY(
-                      begin: 1.0,
-                      end: 0,
-                      curve: Curves.easeOutBack,
                     ),
-                  ],
-                ),
-              ),
-
-            // Progress Dots (2 of 7)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(7, (index) {
-                  final isActive = index == 1; // 2nd Screen
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 8,
-                    width: isActive ? 24 : 8,
-                    decoration: BoxDecoration(
-                      color: isActive ? AppColors.secondary : AppColors.gray300,
-                      borderRadius: BorderRadius.circular(4),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Which language should we speak in?',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
                     ),
-                  );
-                }),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.5, // Start from middle
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFF8F0), // Off-white/Cream
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 30),
+                  Text(
+                    'Select Language',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFFD95D39), // Darker orange/rust
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Language List
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 10,
+                      ),
+                      itemCount: languages.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final language = languages[index];
+                        final isSelected =
+                            onboardingState.selectedLanguage ==
+                            language['code'];
+
+                        return GestureDetector(
+                          onTap: () {
+                            ref
+                                .read(onboardingProvider.notifier)
+                                .selectLanguage(language['code']!);
+                            _speak(language['greet']!, language['code']!);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFFF36D43)
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                language['native']!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                  color: isSelected
+                                      ? const Color(0xFFF36D43)
+                                      : const Color(0xFFD95D39),
+                                  textStyle: const TextStyle(
+                                    fontFamilyFallback: [
+                                      'NotoSansDevanagari',
+                                      'NotoSansBengali',
+                                      'NotoSansTamil',
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Next Button (Floating or Bottom)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40, right: 24),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: onboardingState.selectedLanguage != null
+                            ? () => ref
+                                  .read(onboardingProvider.notifier)
+                                  .nextPage()
+                            : null,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 300),
+                          opacity: onboardingState.selectedLanguage != null
+                              ? 1.0
+                              : 0.0,
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -9,11 +9,15 @@ import '../../features/onboarding/onboarding_provider.dart';
 import '../../features/onboarding/screens/onboarding_complete_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  // Watch onboarding state to trigger rebuilds on change
-  final onboardingState = ref.watch(onboardingProvider);
+  // IMPORTANT: Only watch isCompleted, NOT the full state.
+  // Watching the full state causes the router (and OnboardingFlow) to rebuild
+  // on every currentIndex change, destroying transition animations.
+  final isCompleted = ref.watch(
+    onboardingProvider.select((state) => state.isCompleted),
+  );
 
   return GoRouter(
-    initialLocation: onboardingState.isCompleted ? '/' : '/onboarding',
+    initialLocation: isCompleted ? '/' : '/onboarding',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
       GoRoute(
