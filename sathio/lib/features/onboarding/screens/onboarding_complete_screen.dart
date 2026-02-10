@@ -74,7 +74,7 @@ class _OnboardingCompleteScreenState
 
                     // Title
                     Text(
-                      'Congratulations!\nYou are ready! 🎉',
+                      'Badhai ho!\nAb aap ready ho! 🎉',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -88,7 +88,7 @@ class _OnboardingCompleteScreenState
 
                     // Subtitle
                     Text(
-                      'Whenever you need help,\nI am here',
+                      'Jab bhi madad chahiye,\nmain yahan hoon',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         color: Colors.black54,

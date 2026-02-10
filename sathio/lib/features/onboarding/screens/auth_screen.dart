@@ -105,11 +105,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           _isLoading = false;
         });
       }
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          if (e.code == 'phone_provider_disabled') {
+            _errorMessage =
+                'Phone sign-in is disabled in Supabase project settings.';
+          } else {
+            _errorMessage = e.message;
+          }
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage =
-              'Failed to send OTP: ${e.toString()}'; // e.message if AuthException
+          _errorMessage = 'An unexpected error occurred: ${e.toString()}';
           _isLoading = false;
         });
       }

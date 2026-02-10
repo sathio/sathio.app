@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../onboarding_provider.dart';
@@ -51,8 +52,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     if (_nameController.text.isNotEmpty) {
       ref.read(onboardingProvider.notifier).setUserName(_nameController.text);
     }
-    // Proceed to next step (UseCase)
-    ref.read(onboardingProvider.notifier).nextPage();
+    // Navigate to celebration screen which handles final completion logic
+    if (mounted) {
+      context.go('/onboarding-complete');
+    }
   }
 
   @override
