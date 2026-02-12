@@ -1,143 +1,147 @@
-# SATHIO — UI/UX DESIGN SYSTEM
+# SATHIO — UI/UX DESIGN SYSTEM (v3.0 — Luma-Inspired)
 
-**Version:** 1.0  
-**Date:** February 8, 2026  
+**Version:** 3.0  
+**Date:** February 12, 2026  
 **Purpose:** Comprehensive Design Guidelines  
-**Audience:** Designers, Frontend Developers, Product Team
+**Audience:** Designers, Frontend Developers, Product Team  
+**Design Reference:** [Luma iOS Onboarding Flow](https://mobbin.com/flows/24035767-44e2-4688-8869-e891996fabc2)
+
+> **Previous versions:** v1.0 (Teal + Cat Logo) archived. This version reflects the Luma-inspired dark-mode-first premium design with the new orange squircle logo.
 
 ---
 
 ## 1. DESIGN PHILOSOPHY
 
+### Design Reference: Luma iOS App
+
+Sathio's UI/UX is inspired by the **Luma iOS app** — clean, minimal, premium:
+- Effortless onboarding — guided signup, verification, profile, discovery
+- Dark mode first — sophisticated dark backgrounds with crisp contrast
+- Smooth micro-animations — subtle transitions, scale effects, fade reveals
+- Card-based layout — content in soft-rounded cards
+- Minimal chrome — content takes center stage
+
 ### Core Principles
 
 | Principle | Implementation |
 |-----------|----------------|
-| **Voice First** | Big mic button, minimal text, spoken everything |
-| **Simplicity Over Features** | Maximum 3-4 options per screen |
-| **Trust Through Calm** | No urgency, no red warnings, patient guidance |
-| **Icon-Heavy** | Universal symbols over language-specific text |
-| **Big Touch Targets** | Minimum 48x48 dp, recommended 72dp for primary actions |
-| **High Contrast** | WCAG AA compliant, visible in bright sunlight |
+| **Premium & Clean** | Dark backgrounds (#0D0D0D), crisp white/orange text, subtle glassmorphism |
+| **Warm & Trustworthy** | Saffron orange (#F58220) accents from logo, rounded corners, friendly tone |
+| **Voice First** | Prominent mic interaction, animated voice states, minimal typing |
+| **Minimal & Focused** | One action per screen, clean hierarchy, no clutter |
+| **Alive & Responsive** | Micro-animations on every interaction, smooth page transitions |
+| **Accessible** | High contrast, 48dp+ touch targets, vernacular text |
+| **Personal** | Addresses user by name, remembers preferences |
 
 ### Design Mantras
 
-> **"If Ramesh (our farmer persona) can't understand it in 3 seconds, redesign it."**
+> **"Premium, Warm, and Alive — like a trusted companion that knows your language."**
 
-> **"Every extra button costs us a user."**
+> **"If Ramesh can't understand it in 3 seconds, redesign it."**
 
-> **"Design for 2GB RAM phones in bright sunlight with one hand."**
+> **"Design for 2GB RAM phones. Dark mode saves battery."**
 
 ---
 
 ## 2. BRAND IDENTITY
 
-### Logo Concept
+### Logo
 
-**Primary Mark:** Friendly black cat face with warm orange accents  
-**Rationale:** 
-- Cat = approachable, friendly, helpful companion
-- Black + Orange = high contrast, visible, distinctive
-- Rounded features = warmth, accessibility, trust
+**Logo:** Orange gradient squircle with white circle containing a 4-pointed star (sparkle)
+
+| Element | Detail |
+|---------|--------|
+| **Outer Shape** | Squircle with organic, flowing curves |
+| **Gradient** | Warm saffron orange → lighter orange at edges |
+| **Inner** | White circle with 4-pointed star (sparkle/compass) in solid orange |
 
 ### Logo Usage
 
 | Context | Specification |
 |---------|---------------|
-| App Icon | Cat face only, 48x48 to 512x512 |
-| In-App Header | Full logo with "Sathio" text |
-| Splash Screen | Centered logo + tagline |
-| Marketing | Logo + "Bharat AI Assistant" tagline |
-
-### Logo Clear Space
-
-- Minimum clear space: 1x height of the cat face on all sides
-- Never distort, rotate, or add effects
-- Black cat face on light backgrounds
-- White/light outline on dark backgrounds
+| App Icon | Full squircle logo |
+| In-App Header | "Sathio" text in Inter Bold |
+| Splash Screen | Centered logo with scale-in animation |
+| Favicon/Small | Star sparkle only (inner element) |
+| Marketing | Logo + "Main hoon na" tagline |
 
 ---
 
 ## 3. COLOR PALETTE
 
-### Primary Colors
+### Primary Colors (From Logo)
 
-| Color | Hex | RGB | Usage |
-|-------|-----|-----|-------|
-| **Sathio Teal** | #00BFA5 | 0, 191, 165 | Primary brand, CTAs, active states |
-| **Saffron Orange** | #FF9800 | 255, 152, 0 | Logo accent, warmth, success |
-| **Deep Blue** | #1E3A5F | 30, 58, 95 | Text, headers, trustworthy |
+| Color | Hex | Usage |
+|-------|-----|-------|
+| **Sathio Orange** | `#F58220` | Primary brand, CTAs, active states |
+| **Orange Light** | `#F7A94B` | Gradients, highlights |
+| **Orange Deep** | `#E06B10` | Pressed states, emphasis |
 
-### Secondary Colors
+### Dark Theme (Default)
 
-| Color | Hex | RGB | Usage |
-|-------|-----|-----|-------|
-| **Success Green** | #4CAF50 | 76, 175, 80 | Task complete, positive feedback |
-| **Alert Amber** | #FFC107 | 255, 193, 7 | Warnings, attention (not critical) |
-| **Error Red** | #E53935 | 229, 57, 53 | Critical errors only (rare) |
+| Color | Hex | Usage |
+|-------|-----|-------|
+| **Background** | `#0D0D0D` | Primary background |
+| **Surface** | `#1A1A1A` | Cards, modals |
+| **Surface Elevated** | `#252525` | Hover states |
+| **Border** | `#2A2A2A` | Subtle dividers |
+| **Text Primary** | `#FFFFFF` | Headings |
+| **Text Secondary** | `#A0A0A0` | Subtitles |
+| **Text Tertiary** | `#666666` | Placeholders |
 
-### Neutral Colors
+### Light Theme
 
-| Color | Hex | RGB | Usage |
-|-------|-----|-----|-------|
-| **Off-White** | #F5F5F5 | 245, 245, 245 | Background primary |
-| **Light Gray** | #E0E0E0 | 224, 224, 224 | Dividers, borders |
-| **Medium Gray** | #9E9E9E | 158, 158, 158 | Secondary text |
-| **Dark Gray** | #424242 | 66, 66, 66 | Body text |
-| **Near Black** | #212121 | 33, 33, 33 | Headers, emphasis |
+| Color | Hex | Usage |
+|-------|-----|-------|
+| **Background** | `#FAFAFA` | Primary background |
+| **Surface** | `#FFFFFF` | Cards, modals |
+| **Border** | `#E8E8E8` | Subtle dividers |
+| **Text Primary** | `#111111` | Headings |
+| **Text Secondary** | `#666666` | Subtitles |
 
-### Dark Mode (Phase 2)
+### Semantic Colors
 
-| Element | Light Mode | Dark Mode |
-|---------|------------|-----------|
-| Background | #F5F5F5 | #121212 |
-| Surface | #FFFFFF | #1E1E1E |
-| Primary Text | #212121 | #E0E0E0 |
-| Secondary Text | #9E9E9E | #757575 |
-| Teal | #00BFA5 | #00E5CC |
+| Color | Hex | Usage |
+|-------|-----|-------|
+| **Success** | `#22C55E` | Completion, validation |
+| **Error** | `#EF4444` | Errors, warnings |
+| **Info** | `#3B82F6` | Links, badges |
+| **Warning** | `#F59E0B` | Caution states |
 
 ### Color Accessibility
-
-- All text-background combinations: **4.5:1 contrast ratio** minimum
-- Large text (24sp+): **3:1 contrast ratio** minimum
-- Test in bright sunlight conditions
-- Test with color blindness simulators
+- White on `#0D0D0D` → 21:1 (WCAG AAA ✅)
+- `#F58220` on `#0D0D0D` → 4.8:1 (WCAG AA ✅)
+- `#111111` on `#FAFAFA` → 19.2:1 (WCAG AAA ✅)
 
 ---
 
 ## 4. TYPOGRAPHY
 
 ### Font Family
-
-**Primary:** Noto Sans  
-**Rationale:** 
-- Supports all Indian scripts (Devanagari, Tamil, Bengali, etc.)
-- Highly legible at small sizes
-- Google-backed, freely available
-- Excellent Unicode support
-
+**Primary:** **Inter** (Google Fonts)  
+**Alternative:** **Outfit** (Google Fonts)  
+**Indian Scripts:** Noto Sans family (Devanagari, Tamil, Bengali, Telugu, Kannada, Gujarati, Gurmukhi, Malayalam, Oriya)  
 **Fallback:** System default, Roboto
 
 ### Type Scale
 
-| Level | Size (sp) | Weight | Line Height | Usage |
-|-------|-----------|--------|-------------|-------|
-| H1 | 28-32 | Bold | 1.3 | Screen titles |
-| H2 | 22-24 | Semi-Bold | 1.35 | Section headers |
-| H3 | 18-20 | Medium | 1.4 | Card titles |
-| Body Large | 18 | Regular | 1.5 | Primary content |
-| Body | 16 | Regular | 1.5 | Default text |
-| Body Small | 14 | Regular | 1.5 | Secondary info |
-| Caption | 12 | Regular | 1.4 | Labels, hints |
-| Button | 16-18 | Medium | 1.2 | Button text |
+| Level | Size | Weight | Line Height | Usage |
+|-------|------|--------|-------------|-------|
+| Display | 36px | Bold (700) | 1.2 | Splash, hero |
+| H1 | 28px | Bold (700) | 1.3 | Screen titles |
+| H2 | 22px | SemiBold (600) | 1.35 | Section headers |
+| H3 | 18px | SemiBold (600) | 1.4 | Card titles |
+| Body Large | 16px | Medium (500) | 1.5 | Important body |
+| Body | 14px | Regular (400) | 1.5 | Default text |
+| Button | 14px | SemiBold (600) | 1.0 | CTA labels |
+| Caption | 12px | Regular (400) | 1.4 | Helper text |
+| Overline | 10px | SemiBold (600) | 1.6 | Labels, badges |
 
-### Typography Guidelines
-
-- **Scalable fonts:** Support system font size up to 200%
-- **Indic scripts:** Use dedicated Noto variants (Noto Sans Devanagari, etc.)
-- **Line length:** Maximum 65 characters per line
-- **Paragraph spacing:** 1.5× font size between paragraphs
-- **No all caps:** Difficult for dyslexic users and non-English scripts
+### Typography Rules
+- Support system font size up to 200%
+- Use Noto Sans variants for Indian scripts
+- Maximum 65 characters per line
+- No all caps (difficult for Indic scripts)
 
 ---
 
@@ -147,37 +151,14 @@
 
 | Attribute | Specification |
 |-----------|---------------|
-| Style | Outlined, rounded corners (Material Icons) |
-| Stroke | 2dp default, 2.5dp for emphasis |
-| Size | 24x24 dp (default), 32x32 dp (navigation) |
-| Touch Target | 48x48 dp minimum around icon |
-| Color | Inherit from text or explicit teal/gray |
+| Library | Phosphor Icons (primary) + Material Icons (fallback) |
+| Style | Outlined, rounded, modern |
+| Size | 24x24dp (default), 32x32dp (navigation) |
+| Touch Target | 48x48dp minimum |
+| Color | White (dark mode), Dark gray (light mode), Orange (active) |
 
-### Core Icon Set
-
-| Icon | Usage | Material Icon Name |
-|------|-------|-------------------|
-| 🎤 | Voice input | `mic` |
-| 🏠 | Home | `home` |
-| 📋 | Government services | `assignment` |
-| ⚡ | Utilities | `bolt` |
-| 💊 | Health | `local_hospital` |
-| 📚 | Education | `school` |
-| 💰 | Payments | `account_balance_wallet` |
-| ⚙️ | Settings | `settings` |
-| 🔔 | Notifications | `notifications` |
-| 👤 | Profile | `person` |
-| ❓ | Help | `help_outline` |
-| ← | Back | `arrow_back` |
-| ✓ | Success | `check_circle` |
-| ⏯ | Play/Pause | `play_circle` / `pause_circle` |
-| 🔄 | Repeat | `replay` |
-
-### Icon + Label Pattern
-
-- Always pair icons with short labels (2-3 words max)
-- Labels in user's selected language
-- Icon above or left of label
+### Core Icons
+🎤 Mic, 🏠 Home, 🔍 Search, ⚙️ Settings, 👤 Profile, 📋 Services, ⚡ Utilities, 💊 Health, 📚 Education, 🔔 Notifications, ← Back, ✓ Success
 
 ---
 
@@ -185,355 +166,248 @@
 
 ### 6.1 Buttons
 
-#### Primary Button (CTA)
-```
-Specs:
-- Height: 56 dp
-- Corner Radius: 28 dp (fully rounded)
-- Background: Sathio Teal (#00BFA5)
-- Text: White, 18sp, Medium weight
-- Padding: 24 dp horizontal
-- Shadow: Elevation 4 dp
-- States:
-  - Default: Teal
-  - Pressed: Darker teal (#009688)
-  - Disabled: Gray (#BDBDBD)
-```
+**Primary Button:**
+- Background: Orange gradient (`#F58220` → `#F7A94B`)
+- Text: White, Inter SemiBold 14px
+- Shape: Pill (radius 100px)
+- Height: 52px
+- Shadow: `0 4px 16px rgba(245, 130, 32, 0.3)`
+- Press: Scale 0.97
 
-#### Microphone Button (Hero)
-```
-Specs:
-- Size: 72x72 dp (touch target: 88x88 dp)
-- Shape: Circle
-- Background: Sathio Teal
-- Icon: White microphone, 36x36 dp
-- Animation: Pulse effect when ready
-- Recording state: Animated waveform inside
-- Shadow: Elevation 8 dp
-```
+**Secondary Button:**
+- Background: `#1A1A1A` (dark) / `#FFFFFF` (light)
+- Border: `1px solid #2A2A2A`
+- Shape: Pill, Height: 48px
 
-#### Secondary Button
-```
-Specs:
-- Height: 48 dp
-- Corner Radius: 8 dp
-- Background: Transparent
-- Border: 2 dp Teal
-- Text: Teal, 16sp, Medium weight
-```
-
-#### Icon Button
-```
-Specs:
-- Size: 48x48 dp
-- Corner Radius: 24 dp (circle)
-- Background: Transparent or light gray
-- Icon: 24x24 dp
-```
+**Mic Button (Hero):**
+- Size: 64x64dp, Circular
+- Background: Orange gradient
+- Icon: White mic, 28x28dp
+- Animation: Breathing pulse (idle), Waveform (listening)
+- Shadow: Orange glow
 
 ### 6.2 Cards
+- Background: `#1A1A1A` / `#FFFFFF`
+- Radius: 16px
+- Border: `1px solid #2A2A2A` / `1px solid #E8E8E8`
+- Padding: 16px
+- Selection: `2px solid #F58220` + subtle orange glow
+- Press: Scale 0.98
 
-#### Service Card
-```
-Specs:
-- Corner Radius: 16 dp
-- Background: White
-- Shadow: Elevation 2 dp
-- Padding: 16 dp
-- Content:
-  - Icon: 48x48 dp, top-center
-  - Title: H3, center-aligned
-  - Subtitle: Body Small, gray, optional
-- Touch: Entire card tappable
-```
+### 6.3 Input Fields
+- Background: `#1A1A1A` / `#FFFFFF`
+- Border: `1px solid #2A2A2A`, Focus: `#F58220`
+- Radius: 12px
+- Height: 52px
+- Padding: 16px
 
-#### Step Card (Guided Mode)
-```
-Specs:
-- Corner Radius: 12 dp
-- Background: #FAFAFA (slightly tinted)
-- Border-left: 4 dp Teal (current step)
-- Padding: 16 dp
-- Content:
-  - Step number badge: Circle, Teal
-  - Instruction text: Body Large
-  - Play button: Secondary, right-aligned
-```
+### 6.4 Chips & Tags
+- Background: `#252525` / `#F0F0F0`
+- Radius: 8px
+- Padding: 6px 12px
+- Active: Orange bg, white text
 
-### 6.3 Navigation
-
-#### Bottom Navigation Bar
-```
-Specs:
-- Height: 64 dp
-- Background: White
-- Shadow: Elevation 8 dp (top)
-- Items: 4 (Home, History, Profile, Help)
-- Item width: Equal distribution
-- Active: Teal icon + label
-- Inactive: Gray icon + label
-- Icon: 24x24 dp
-- Label: 12sp, Caption
-```
-
-#### Top App Bar
-```
-Specs:
-- Height: 56 dp
-- Background: White
-- Shadow: Elevation 2 dp
-- Left: Back arrow or Menu
-- Center: Screen title (H2)
-- Right: Action icons (Settings, Language)
-```
-
-### 6.4 Input Components
-
-#### Text Input (Backup/Typing)
-```
-Specs:
-- Height: 56 dp
-- Corner Radius: 8 dp
-- Border: 2 dp, gray (default), Teal (focused)
-- Padding: 16 dp
-- Placeholder: Medium gray, Body
-- Text: Dark gray, Body
-- Error state: Red border, red helper text
-```
-
-#### Language Selector
-```
-Specs:
-- Type: Large button grid (2x2)
-- Button size: 80x80 dp
-- Content: Flag icon + native script name
-- Selected: Teal border, check overlay
-- Tap: Voice preview of "Main Hindi mein baat kar sakta hoon"
-```
-
-### 6.5 Feedback Components
-
-#### Loading State
-```
-Specs:
-- Type: Animated waveform (for voice processing)
-- Color: Teal
-- Size: 48x48 dp
-- Text below: "Samajh raha hoon..." (Body)
-- Duration indicator: Optional progress ring
-```
-
-#### Success State
-```
-Specs:
-- Icon: Green checkmark in circle (64x64 dp)
-- Animation: Scale up + bounce
-- Text: "Ho gaya!" (H2, green)
-- Sound: Soft chime (optional)
-```
-
-#### Error State
-```
-Specs:
-- Icon: Amber warning triangle (48x48 dp)
-- Text: Friendly message (Body, amber)
-- Example: "Network thoda slow hai. Phir try karein?"
-- Action: Retry button (primary)
-```
-
-#### Toast / Snackbar
-```
-Specs:
-- Position: Bottom, 16 dp margin
-- Height: 48 dp
-- Corner Radius: 8 dp
-- Background: Near Black (#212121)
-- Text: White, Body
-- Duration: 4 seconds
-- Action: Optional text button (Teal)
-```
+### 6.5 Bottom Sheet
+- Background: `#1A1A1A` / `#FFFFFF`
+- Top handle: 40x4px bar
+- Radius: 24px (top corners)
+- Animation: Spring slide-up
 
 ---
 
 ## 7. LAYOUT SYSTEM
 
-### Grid System
+### Screen Architecture (Luma-Inspired)
+- Full-screen dark background (no split-screen)
+- Floating content cards
+- Sticky minimal header
+- Bottom-aligned primary CTAs
+- No bottom tab bar (Luma-style single-purpose screens)
 
-- **Margins:** 16 dp minimum on all sides
-- **Gutters:** 16 dp between elements
-- **Columns:** Single column for most screens (mobile-first)
-- **Card grid:** 2 columns for service selection
+### Spacing Tokens
 
-### Spacing Scale
+| Token | Value |
+|-------|-------|
+| xs | 4px |
+| sm | 8px |
+| md | 16px |
+| lg | 24px |
+| xl | 32px |
+| 2xl | 48px |
+
+### Corner Radii
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xs | 4 dp | Tight text spacing |
-| sm | 8 dp | Between related elements |
-| md | 16 dp | Standard padding, margins |
-| lg | 24 dp | Section spacing |
-| xl | 32 dp | Major section breaks |
-| xxl | 48 dp | Hero spacing |
-
-### Safe Zones
-
-- **Bottom safe zone:** 64 dp (for bottom navigation)
-- **Top safe zone:** 56 dp (for app bar)
-- **Floating button:** 16 dp from bottom nav, 16 dp from right edge
+| sm | 8px | Tags, badges |
+| md | 12px | Inputs, small cards |
+| lg | 16px | Primary cards |
+| xl | 24px | Bottom sheets |
+| pill | 100px | Buttons, search bars |
 
 ---
 
 ## 8. KEY SCREENS
 
 ### 8.1 Splash Screen
-```
-Layout:
-- Background: Off-white
-- Center: Sathio logo (cat face) — 120x120 dp
-- Below logo: "Sathio" text — H1
-- Below text: Tagline "Main hoon na" — Body, gray
-- Bottom: Loading indicator — subtle
+- Background: `#0D0D0D`
+- Center: Sathio logo (100x100dp) with fade+scale animation
+- "Sathio" in white, Inter Bold, fades in after logo
+- "Main hoon na" in `#A0A0A0`, fades in after title
+- Duration: 2 seconds, smooth fade-out
 
-Duration: 2-3 seconds max
-```
+### 8.2 Onboarding (Luma-Style — LIGHT backgrounds)
 
-### 8.2 Language Selection (First Launch)
-```
-Layout:
-- Header: "Kaunsi bhasha mein baat karein?" (all 4 scripts)
-- Grid: 2x2 language buttons
-  - Each: Flag + Native script name + Voice preview icon
-  - Hindi: 🇮🇳 हिंदी
-  - Tamil: 🇮🇳 தமிழ்
-  - Bengali: 🇮🇳 বাংলা
-  - Marathi: 🇮🇳 मराठी
-- Tap: Plays voice preview before selection
-- Bottom: "Continue" button (after selection)
-```
+> **IMPORTANT:** Onboarding uses LIGHT backgrounds with BLACK pill buttons.
+> Dark mode begins only on the Home Screen.
+
+**Welcome Screen:**
+- Soft pastel gradient background (`#F8F0FF` → `#E8F4FD` → `#FFF8F0`)
+- Floating 3D icons orbiting a central sparkle (like Luma's emoji orbits)
+- Icons: Phone, Government, Bills, Mic, Health, Education (in pastel circles)
+- Concentric orbit lines: light gray `#E8E8E8`
+- "sathio✦" logo + "Aapka Digital Saathi" + "Yahan Se Shuru Karein" (orange)
+- "Get Started" — black pill button (`#111111`)
+
+**Auth Bottom Sheet:**
+- White sheet slides up over blurred welcome illustration
+- Sparkle icon + Close "X"
+- "Shuru Karein" title + description
+- "Continue with Phone" — black pill
+- "Continue with Google" — light gray pill (`#F5F5F5`)
+- "Continue as Guest" — text link
+
+**Phone Input:**
+- White bg, back arrow, gray phone icon in `#F5F5F5` circle
+- "+91" prefix + large input, auto-focus number pad
+- "Skip for now" text link, "Next" black pill
+
+**OTP Verification:**
+- White bg, gray chat bubble icon
+- 6 individual digit boxes (48x56dp, `#F5F5F5` bg, 12px radius)
+- Auto-advance, paste, auto-submit
+- "Next" black pill
+
+**Language Selection:**
+- 3-column grid, white cards, orange border on selection
+- Voice preview on tap
+
+**Profile Setup:**
+- Pastel gradient header (25%), white content area (75%)
+- Avatar with camera badge, name + state form
+- "Continue" black pill
+
+**Interest Selection:**
+- 2-column emoji cards, multi-select, orange border on selection
+- "Shuru Karein" black pill
+
+**Voice Demo:**
+- Centered sparkle + black mic button (80x80dp)
+- Permission request on tap, success animation
+- → Home (onboarding complete, stored in Hive)
 
 ### 8.3 Home Screen
-```
-Layout:
-- Top bar: Language flag (left), Settings (right)
-- Hero section:
-  - Sathio avatar/logo — 80x80 dp
-  - Greeting: "Namaste! Batao, kya madad chahiye?" — H2
-- Primary CTA:
-  - Microphone button — 72x72 dp, center
-  - Label below: "Tap karke bolo" — Body
-- Quick access grid (2x2):
-  - Government services
-  - Bill payments
-  - Health info
-  - Education
-- Bottom nav: Home, History, Profile, Help
-```
+- Dark background, full-screen immersive
+- Top: Language pill (left), settings + profile (right)
+- Greeting: Time-based "Namaste [Name]!" in H1 white
+- Search bar: Pill shape, `#1A1A1A`, mic icon (orange)
+- Quick chips: Horizontal scroll (Aadhaar, Bill Pay, etc.)
+- Recent activity: Card list
+- Floating mic: Bottom center, 64x64, orange, breathing pulse
 
-### 8.4 Listening State
-```
-Layout:
-- Full screen overlay (semi-transparent)
-- Center: Large microphone icon (96x96 dp)
-- Below mic: Animated waveform
-- Text: "Sun raha hoon..." — H2, Teal
-- Timer: "0:05 / 1:00" — Caption
-- Cancel: "X" button in corner
-```
+### 8.4 Listening Overlay
+- Full overlay: `rgba(0,0,0,0.85)`
+- Center: Animated waveform (orange bars)
+- Text: "Sun raha hoon..." → "Samajh raha hoon..."
+- Tap to cancel
 
 ### 8.5 Response Screen
-```
-Layout:
-- Top bar: Back, "Aadhaar Download" (context) 
-- Avatar: Sathio speaking animation
-- Response card:
-  - Text: Bot response — Body Large
-  - Play button: Replays audio
-  - Speed toggle: 0.75x, 1x, 1.25x
-- Action buttons (if applicable):
-  - "Aage badhein" (Primary)
-  - "Repeat karein" (Secondary)
-- Bottom: Microphone button (for follow-up)
-```
-
-### 8.6 Guided Mode (Steps)
-```
-Layout:
-- Top bar: Back, "Step 2 of 5", Close
-- Progress bar: Horizontal, showing completion
-- Current step card:
-  - Step number badge: "2"
-  - Instruction: "Ab 'Download' button pe click karein" — Body Large
-  - Visual hint: Screenshot/illustration (optional)
-  - Play button: Hear instruction
-- Navigation:
-  - "Previous" (Secondary, left)
-  - "Next" (Primary, right, large)
-- Bottom: "Pause" and "Talk to Human" buttons
-```
-
-### 8.7 Task Complete Screen
-```
-Layout:
-- Celebration animation (confetti, brief)
-- Success icon: Green check — 96x96 dp
-- Text: "Ho gaya! Aapka Aadhaar download ho gaya." — H1
-- Summary card: Task details
-- Actions:
-  - "Naya task shuru karein" (Primary)
-  - "Home jaayein" (Secondary)
-- Rating prompt: "Kya task easy tha?" — thumbs up/down
-```
-
-### 8.8 Human Escalation
-```
-Layout:
-- Context: "Is sawaal ka jawab mushkil hai."
-- Options card:
-  - Call Expert: "₹50 mein 10 minute" + Phone icon
-  - WhatsApp: "Free text support" + WhatsApp icon
-  - Callback: "Baad mein call karein" + Clock icon
-- Trust elements: "Expert verified ✓", "Private ✓"
-- Cancel: "Nahi, main khud try karunga"
-```
+- Response card slides up from bottom
+- Typewriter text animation + TTS
+- Play/speed controls
+- Follow-up mic button
 
 ---
 
-## 9. ANIMATIONS & MOTION
+## 9. ANIMATIONS & MICRO-INTERACTIONS
 
-### Principles
+> **Packages:** flutter_animate + Lottie + animations (OpenContainer)
+> **Rule:** Every animation serves a purpose. Respect reduced motion settings.
 
-| Principle | Application |
-|-----------|-------------|
-| **Purposeful** | Animations communicate state, not decorate |
-| **Quick** | 150-300ms for most transitions |
-| **Smooth** | 60fps, no jank |
-| **Subtle** | No flashy effects, respect low-end devices |
+### 9.1 Page Transitions
 
-### Key Animations
+| Transition | Style | Duration | Curve |
+|------------|-------|----------|-------|
+| Forward | Shared Axis fade-through | 300ms | easeOutCubic |
+| Back | Reverse shared axis | 250ms | easeInCubic |
+| Bottom Sheet | Spring slide-up | 400ms | elasticOut |
+| Modal | Scale 0.9→1.0 + fade | 250ms | easeOutBack |
+| Hero | Shared element morph | 350ms | fastOutSlowIn |
+| Card→Detail | Container Transform (OpenContainer) | 350ms | fastOutSlowIn |
 
-| Element | Animation | Duration |
-|---------|-----------|----------|
-| Screen transition | Slide from right | 250ms |
-| Modal open | Fade + scale up | 200ms |
-| Button press | Ripple + slight scale | 150ms |
-| Mic listening | Pulse glow | Continuous |
-| Waveform | Audio-reactive bars | Continuous |
-| Success | Scale up + bounce | 400ms |
-| Error shake | Horizontal shake | 300ms |
-| Card tap | Slight lift (elevation) | 100ms |
+### 9.2 Onboarding Entry Sequence
+```
+0ms:   Gradient bg fades in (600ms)
+200ms: Sparkle scales in (spring) + rotation
+400ms: Orbit circles draw in (800ms)
+600ms: Floating icons appear staggered (100ms interval each)
+1000ms: Logo fades in → headline slides up → subheadline → button
+```
+- Floating icons: sin/cos drift, 3-5s loop, staggered phase
+- Auth sheet: spring slide-up, contents stagger in (100ms intervals)
+- Between steps: slide-left exit (250ms) → slide-from-right enter (300ms)
 
-### Microphone States
+### 9.3 Home Screen Entry
+```
+0ms:   Background white→dark fade (500ms)
+200ms: Top bar items fade-slide down
+400ms: Greeting typewriter (40ms/char)
+800ms: Search bar slides up (easeOutBack)
+1000ms: Chips stagger left→right (80ms interval)
+1200ms: Cards stagger upward (100ms interval)
+1400ms: Mic button bounces in (spring)
+```
+- Parallax greeting on scroll (0.5x speed, fades)
+- Search bar: sticky, shrinks 56→48dp on scroll
+- Pull-to-refresh: sparkle rotates → spins loading → checkmark
 
-1. **Idle:** Solid teal, subtle pulse
-2. **Listening:** Glowing border, waveform inside
-3. **Processing:** Spinning/pulsing indicator
-4. **Ready to speak:** Brief glow before TTS
+### 9.4 Card & Chip Interactions
+- **Press:** scale 0.97, shadow shrinks (100ms)
+- **Release:** scale 1.0, shadow returns with overshoot (150ms, easeOutBack)
+- **Selection:** orange border fadeIn (200ms) + checkmark scale (300ms, spring)
+- **Chip tap:** scale 0.95 → bounce → orange bg slides from left
 
-### Loading States
+### 9.5 Voice State Machine
+```
+IDLE → LISTENING → PROCESSING → SPEAKING → IDLE
+```
+| State | Animation |
+|-------|-----------|
+| Idle | Breathing glow (radius 8→16dp, 2s loop) |
+| Listening | 5 waveform bars, height = amplitude (60fps) |
+| Processing | Bars collapse → 3 bouncing dots (staggered 150ms) |
+| Speaking | Typewriter (30ms/char) + soft waveform |
+| Error | Shake [-8,8,-6,6,-3,0] + red flash |
 
-- Voice processing: Animated waveform with "Samajh raha hoon..."
-- Network request: Subtle progress bar or spinner
-- Content loading: Skeleton screens (not blank)
+### 9.6 Loading States
+- **Skeleton shimmer:** Dark `#1A1A1A→#2A2A2A→#1A1A1A` / Light `#E8E8E8→#F5F5F5→#E8E8E8`
+- **Content load-in:** crossFade (300ms) + staggered list items
+- **Button loading:** orange spinner replaces text (24dp, 1.2s rotation)
+
+### 9.7 Floating Mic FAB
+- Scroll down: slides down + fades out (200ms)
+- Scroll up: slides up + fades in (300ms, easeOutBack)
+- Tap: scale 1.0→1.15→1.0 + haptic → listening state
+
+### 9.8 Toasts & Celebrations
+- **Success toast:** slide-down from top (300ms) + green accent + auto-dismiss 3s
+- **Error toast:** slide-down + shake + red accent
+- **Onboarding complete:** Lottie confetti (1.5s) + text scale overshoot
+- **Achievement:** badge scales in (spring) + particle ring
+
+### 9.9 Reduced Motion
+- Check `MediaQuery.of(context).disableAnimations`
+- When ON: all durations = 0, fades only, no parallax, static loading spinner
 
 ---
 
@@ -543,234 +417,113 @@ Layout:
 
 | Event | Sound | Duration |
 |-------|-------|----------|
-| Mic activated | Soft "blip" | 100ms |
+| Mic activated | Soft blip | 100ms |
 | Recording started | Rising tone | 150ms |
-| Recording ended | Falling tone | 150ms |
-| Processing | None (prefer silence) | - |
 | Success | Pleasant chime | 300ms |
 | Error | Soft low tone | 200ms |
-| Notification | Gentle ping | 250ms |
 
 ### TTS Guidelines
-
-| Aspect | Specification |
-|--------|---------------|
-| Speed | 140 words/minute (adjustable) |
-| Pauses | 0.5s between sentences |
-| Emphasis | Moderate (not robotic, not dramatic) |
-| Numbers | Spoken naturally (not "one-oh-oh" for 100) |
-| Names | Respect local pronunciation |
-
-### Notification Sounds
-
-- **Engagement:** Friendly chime (bird-like)
-- **Reminder:** Gentle bell
-- **Success:** Happy completion tone
-- **All sounds:** User can disable in settings
+- Speed: 140 wpm (adjustable)
+- Pauses: 0.5s between sentences
+- Numbers: Spoken naturally
+- All sounds user-disablable
 
 ---
 
 ## 11. ACCESSIBILITY
 
-### WCAG 2.1 AA Compliance
-
 | Requirement | Implementation |
 |-------------|----------------|
-| Color contrast | 4.5:1 for text, 3:1 for large text |
-| Touch targets | 48x48 dp minimum |
+| Touch targets | 48x48dp minimum |
 | Text scaling | Support 200% system font |
+| Contrast | All text passes WCAG AA |
 | Screen reader | Full TalkBack support |
-| Focus indicators | Visible outline on all interactive elements |
-| Alt text | All images and icons labeled |
-
-### Voice-First Benefits
-
-- Entire app usable without reading
-- All text content can be spoken
-- No reliance on color alone for meaning
-- Large buttons reduce motor skill requirements
-
-### Specific Accommodations
-
-| Need | Solution |
-|------|----------|
-| Low vision | High contrast mode, large text |
-| Dyslexia | Simple fonts, short lines |
-| Cognitive load | Minimal choices, clear labels |
-| Motor impairment | Large touch targets, voice control |
-| Hearing impairment | Visual confirmations, text captions |
-
-### Testing Requirements
-
-- Test with TalkBack enabled
-- Test at 200% font size
-- Test in bright outdoor light
-- Test with slow network (3G simulation)
-- Test on 2GB RAM devices
+| Reduced motion | Respects system setting |
+| One-hand use | Critical actions in bottom 60% |
+| Vernacular | All UI text in active language |
 
 ---
 
 ## 12. LOCALIZATION
 
-### Language Support Matrix
+### Language Support (All 22 Scheduled Languages)
 
-| Language | Script | Flag | Native Name | Status |
-|----------|--------|------|-------------|--------|
-| Hindi | Devanagari | 🇮🇳 | हिंदी | MVP |
-| Bengali | Bengali | 🇮🇳 | বাংলা | MVP |
-| Tamil | Tamil | 🇮🇳 | தமிழ் | MVP |
-| Marathi | Devanagari | 🇮🇳 | मराठी | MVP |
-| Telugu | Telugu | 🇮🇳 | తెలుగు | Phase 2 |
-| Kannada | Kannada | 🇮🇳 | ಕನ್ನಡ | Phase 2 |
-| Gujarati | Gujarati | 🇮🇳 | ગુજરાતી | Phase 2 |
-| Punjabi | Gurmukhi | 🇮🇳 | ਪੰਜਾਬੀ | Phase 2 |
+| Phase | Languages |
+|-------|-----------|
+| MVP | Hindi, Bengali, Tamil, Marathi |
+| Phase 2 | Telugu, Kannada, Gujarati, Punjabi |
+| Phase 3 | Malayalam, Odia, Assamese, Urdu |
+| Phase 4 | All remaining scheduled languages |
 
-### Localization Rules
-
-1. **Never hardcode strings** — All text from localization files
-2. **Account for text expansion** — Hindi 20-30% longer than English
-3. **Test all scripts** — Each script has unique rendering needs
-4. **Right-to-left ready** — Architecture supports Urdu/Arabic (future)
-5. **Date formats** — DD/MM/YYYY (Indian standard)
-6. **Number formats** — Indian numbering (lakhs, crores) with commas
-
-### Content Localization
-
-| Content Type | Approach |
-|--------------|----------|
-| UI strings | Professional translation + native review |
-| FAQs | Expert translation per language |
-| Error messages | Casual, friendly tone maintained |
-| Notifications | Culturally appropriate timing/tone |
-| Legal text | Certified translation |
+### Rules
+- Never hardcode strings
+- Account for 20-30% text expansion
+- Indian date format (DD/MM/YYYY)
+- Indian numbering (lakhs, crores)
+- RTL-ready architecture
 
 ---
 
-## 13. DESIGN TOKENS (CSS/Kotlin Reference)
+## 13. DESIGN TOKENS (Flutter/CSS Reference)
 
 ### Colors
+```dart
+// Primary
+static const sathioOrange = Color(0xFFF58220);
+static const orangeLight = Color(0xFFF7A94B);
+static const orangeDeep = Color(0xFFE06B10);
 
-```css
-:root {
-  /* Primary */
-  --color-teal-500: #00BFA5;
-  --color-teal-600: #009688;
-  --color-orange-500: #FF9800;
-  --color-blue-800: #1E3A5F;
-  
-  /* Secondary */
-  --color-green-500: #4CAF50;
-  --color-amber-500: #FFC107;
-  --color-red-500: #E53935;
-  
-  /* Neutrals */
-  --color-gray-50: #F5F5F5;
-  --color-gray-200: #E0E0E0;
-  --color-gray-400: #9E9E9E;
-  --color-gray-700: #424242;
-  --color-gray-900: #212121;
-  
-  /* Semantic */
-  --color-background: var(--color-gray-50);
-  --color-surface: #FFFFFF;
-  --color-primary: var(--color-teal-500);
-  --color-on-primary: #FFFFFF;
-  --color-text-primary: var(--color-gray-900);
-  --color-text-secondary: var(--color-gray-400);
-}
+// Dark Theme
+static const darkBg = Color(0xFF0D0D0D);
+static const darkSurface = Color(0xFF1A1A1A);
+static const darkSurfaceElevated = Color(0xFF252525);
+static const darkBorder = Color(0xFF2A2A2A);
+static const darkTextPrimary = Color(0xFFFFFFFF);
+static const darkTextSecondary = Color(0xFFA0A0A0);
+
+// Light Theme
+static const lightBg = Color(0xFFFAFAFA);
+static const lightSurface = Color(0xFFFFFFFF);
+static const lightBorder = Color(0xFFE8E8E8);
+static const lightTextPrimary = Color(0xFF111111);
 ```
 
 ### Spacing
-
-```css
-:root {
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-xxl: 48px;
-}
-```
-
-### Typography
-
-```css
-:root {
-  --font-family: 'Noto Sans', system-ui, sans-serif;
-  
-  --font-size-caption: 12px;
-  --font-size-body-sm: 14px;
-  --font-size-body: 16px;
-  --font-size-body-lg: 18px;
-  --font-size-h3: 20px;
-  --font-size-h2: 24px;
-  --font-size-h1: 32px;
-  
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  
-  --line-height-tight: 1.2;
-  --line-height-normal: 1.5;
-}
-```
-
-### Elevation (Shadows)
-
-```css
-:root {
-  --elevation-1: 0 1px 3px rgba(0,0,0,0.12);
-  --elevation-2: 0 2px 6px rgba(0,0,0,0.15);
-  --elevation-4: 0 4px 12px rgba(0,0,0,0.15);
-  --elevation-8: 0 8px 24px rgba(0,0,0,0.15);
-}
+```dart
+static const xs = 4.0;
+static const sm = 8.0;
+static const md = 16.0;
+static const lg = 24.0;
+static const xl = 32.0;
+static const xxl = 48.0;
 ```
 
 ### Border Radius
-
-```css
-:root {
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
-}
+```dart
+static const radiusSm = 8.0;
+static const radiusMd = 12.0;
+static const radiusLg = 16.0;
+static const radiusXl = 24.0;
+static const radiusPill = 100.0;
 ```
 
 ---
 
-## 14. DESIGN CHECKLIST
+## 14. TECHNICAL STACK
 
-### Before Development Handoff
-
-- [ ] All screens designed for all 4 languages
-- [ ] All states covered (loading, error, empty, success)
-- [ ] Touch targets verified (48dp+)
-- [ ] Color contrast checked (4.5:1)
-- [ ] Text at 200% font size tested
-- [ ] Animations specified with timing
-- [ ] Voice prompts written for each screen
-- [ ] Error messages written in friendly tone
-- [ ] Component specs in design tokens
-
-### Before Release
-
-- [ ] User testing with target personas
-- [ ] Field testing in low-light and bright conditions
-- [ ] Testing on 2GB RAM devices
-- [ ] Testing on 3G network
-- [ ] TalkBack accessibility testing
-- [ ] All languages reviewed by native speakers
-- [ ] Voice recordings reviewed for clarity
+- **Framework:** Flutter (Android-first)
+- **State Management:** Riverpod
+- **Backend/Auth:** Supabase
+- **Local Storage:** Hive
+- **Typography:** Google Fonts (Inter + Noto Sans family)
+- **Animations:** flutter_animate + Lottie
+- **Icons:** Phosphor Icons + Material Icons
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** February 8, 2026  
-**Status:** Design System Ready
+**Document Version:** 3.0  
+**Last Updated:** February 12, 2026  
+**Status:** Design System Ready (Luma-Inspired)
 
 ---
 

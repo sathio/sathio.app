@@ -1,7 +1,7 @@
 # SATHIO — IMPLEMENTATION PLAN
 
-**Version:** 1.0  
-**Date:** February 8, 2026  
+**Version:** 2.0 (LAM Architecture)  
+**Date:** February 12, 2026  
 **Status:** Engineering-Ready  
 **Prepared For:** Engineering, DevOps, and Execution Teams
 
@@ -9,9 +9,9 @@
 
 ## OVERVIEW
 
-This document provides the technical roadmap for building Sathio from concept to launch. It defines development phases, architecture decisions, technology choices, and deployment strategy.
+This document provides the technical roadmap for building Sathio — a Large Action Model (LAM) that autonomously controls the user's phone to complete any digital task via voice commands in their native language.
 
-**Timeline:** MVP Launch in 12-16 weeks (Phase 0 + Phase 1)
+**Timeline:** MVP Launch in 16-20 weeks (Phase 0 + Phase 1 + Phase 2)
 
 ---
 
@@ -19,90 +19,90 @@ This document provides the technical roadmap for building Sathio from concept to
 
 ### Phase 0: Foundation (Weeks 0-4)
 
-**Goal:** Establish core infrastructure and voice pipeline
+**Goal:** Establish core infrastructure, voice pipeline, and Accessibility Service
 
 | Sprint | Focus | Deliverables |
 |--------|-------|--------------|
-| Week 1-2 | Project Setup | Repo structure, CI/CD, dev environments |
-| Week 3-4 | Core Voice Pipeline | ASR/TTS integration, basic intent classification |
+| Week 1-2 | Project Setup | Repo, CI/CD, dev env, Flutter scaffold |
+| Week 3-4 | Voice + Device Control | ASR/TTS integration, Accessibility Service setup |
 
 **Key Milestones:**
-- [ ] Development environment configured for all team members
+- [ ] Development environment configured
 - [ ] Bhashini API integration working (STT + TTS)
+- [ ] Android Accessibility Service registered and functional
+- [ ] Can programmatically tap, type, scroll on any screen
 - [ ] Basic intent classifier trained on 500 sample queries
-- [ ] Android app skeleton with mic button and voice capture
 
 ---
 
-### Phase 1: Core MVP (Weeks 4-10)
+### Phase 1: Core LAM Engine (Weeks 4-10)
 
-**Goal:** Deliver functional MVP with core government services
+**Goal:** Build the autonomous task execution engine
 
 | Sprint | Focus | Deliverables |
 |--------|-------|--------------|
-| Week 5-6 | Government Services | Aadhaar, PAN, PM-Kisan guidance flows |
-| Week 7-8 | Guided Mode + UI | Step-by-step mode, icon-based UI |
-| Week 9-10 | Integration & Testing | End-to-end testing, performance optimization |
+| Week 5-6 | Screen Reader + VLM | Vision model reads any screen, identifies UI elements |
+| Week 7-8 | Action Executor | Tap, type, scroll, navigate based on VLM output |
+| Week 9-10 | Slot Filling + Safety | Conversational data collection, safety controls |
 
 **Key Milestones:**
-- [ ] 4 languages working (Hindi, Tamil, Bengali, Marathi) with >80% SVR
-- [ ] 5 government service flows complete
-- [ ] Step-by-step guided mode functional
-- [ ] APK size <40MB, runs on 2GB RAM devices
-- [ ] 500 beta testers onboarded
+- [ ] VLM can read and describe any Android screen
+- [ ] Action executor can fill a form on a website end-to-end
+- [ ] Slot filling dialogue asks user for missing fields
+- [ ] Safety: confirmation before payments/submissions
+- [ ] Floating overlay shows current action to user
 
 ---
 
-### Phase 2: MVP+ Features (Weeks 10-16)
+### Phase 2: Task Flows + UI (Weeks 10-16)
 
-**Goal:** Add retention features and human escalation
+**Goal:** Build pre-mapped task flows and polished UI
 
 | Sprint | Focus | Deliverables |
 |--------|-------|--------------|
-| Week 11-12 | Offline Mode | Pre-cached FAQs, emergency numbers |
-| Week 13-14 | HITL Escalation | Expert routing, WhatsApp integration |
-| Week 15-16 | Notifications | Smart push notifications, engagement system |
+| Week 11-12 | Government Tasks | Aadhaar download, PM-Kisan, PAN — fully autonomous |
+| Week 13-14 | Utility + Commerce | Bill payment, mobile recharge, basic shopping |
+| Week 15-16 | App UI + Onboarding | Home screen, onboarding flow, history, profile |
 
 **Key Milestones:**
-- [ ] Offline mode with <50MB package
-- [ ] Human escalation working with 3-5 trained agents
-- [ ] Notification system with 1/day limit
-- [ ] Credit system functional
-- [ ] 10,000+ DAU target
+- [ ] 5 government service tasks working autonomously
+- [ ] Bill payment cross-app automation working
+- [ ] 4 languages working with >80% accuracy
+- [ ] Duolingo-style onboarding complete
+- [ ] APK size <50MB, runs on 2GB RAM devices
 
 ---
 
 ### Phase 3: Scale & Monetization (Weeks 16-24)
 
-**Goal:** Launch monetization and government partnerships
+**Goal:** Launch monetization, advanced LAM features, beta testing
 
 | Sprint | Focus | Deliverables |
 |--------|-------|--------------|
-| Week 17-18 | Payments | UPI integration, Sathio Plus subscriptions |
-| Week 19-20 | Admin Dashboard | Content management, analytics |
-| Week 21-22 | B2B Integrations | Lead generation APIs, partner onboarding |
-| Week 23-24 | Government Pilot | White-label for state partners |
+| Week 17-18 | Payments + Credits | UPI integration, Sathio Plus subscriptions |
+| Week 19-20 | Advanced LAM | Train booking, shopping, WhatsApp automation |
+| Week 21-22 | Admin + Analytics | Content management, usage analytics dashboard |
+| Week 23-24 | Beta + Polish | 1000 beta testers, bug fixes, performance tuning |
 
 **Key Milestones:**
-- [ ] Payment gateway live (Razorpay)
+- [ ] Payment gateway live
+- [ ] 15+ autonomous task types working
 - [ ] Admin dashboard for content updates
-- [ ] First government partnership signed
-- [ ] First B2B lead generation revenue
-- [ ] 50,000+ DAU
+- [ ] 10K+ DAU
 
 ---
 
 ### Phase 4: Expansion (Months 6-12)
 
-**Goal:** Language expansion, advanced features
+**Goal:** Language expansion, B2B, advanced capabilities
 
 | Focus Area | Deliverables |
 |------------|--------------|
 | Languages | Add Telugu, Kannada, Gujarati, Punjabi |
-| Form Auto-Fill | AI-powered form detection and filling |
-| Voice Commerce | DeHaat, AgroStar integration |
-| WhatsApp Bot | Full feature parity |
-| IVR Channel | Feature phone support |
+| Advanced LAM | Any website form, any app, complex multi-step flows |
+| WhatsApp Bot | Voice + text LAM over WhatsApp |
+| B2B | Lead generation, government partnerships |
+| Human Escalation | Expert consultation marketplace |
 
 ---
 
@@ -114,21 +114,22 @@ This document provides the technical roadmap for building Sathio from concept to
 |----------|----------|
 | **Languages** | Hindi, Tamil, Bengali, Marathi |
 | **Voice** | Tap-to-talk, TTS responses, code-mixing |
-| **Government** | Aadhaar, PAN, PM-Kisan, Pension, Ration Card |
-| **Utilities** | Electricity, Mobile, Gas (guidance only) |
-| **Health/Edu** | Ayushman Bharat, Scholarships (info only) |
-| **UI** | Icon-based, large buttons, step-by-step mode |
+| **LAM Core** | Accessibility Service, VLM screen reader, Action executor |
+| **Government** | Aadhaar download, PAN apply, PM-Kisan registration (AUTONOMOUS) |
+| **Utilities** | Bill payment, mobile recharge (CROSS-APP AUTOMATION) |
+| **Health/Edu** | Ayushman Bharat, Scholarships (info + form filling) |
+| **Safety** | Floating overlay, kill switch, confirmation prompts |
+| **UI** | Icon-based, large buttons, execution overlay |
 | **Platform** | Android only (5.0+) |
 
 ### Out of Scope (MVP)
 
 | Feature | Phase |
 |---------|-------|
-| iOS app | Phase 3 |
-| Form auto-fill | Phase 3 |
-| In-app payments | Phase 2 (redirect only in MVP) |
-| WhatsApp bot | Phase 3 |
-| IVR/feature phones | Phase 4 |
+| iOS app | Phase 4 |
+| Train/flight booking | Phase 3 |
+| WhatsApp bot | Phase 4 |
+| Voice commerce (shopping) | Phase 3 |
 | More than 4 languages | Phase 4 |
 
 ---
@@ -164,6 +165,16 @@ This document provides the technical roadmap for building Sathio from concept to
 │   Whisper)       │ │   FastAPI)       │ │   Coqui)         │
 └────────┬─────────┘ └────────┬─────────┘ └────────┬─────────┘
          └────────────────────┼────────────────────┘
+         └────────────────────┼────────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    AGENTIC CORE (LAM)                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
+│  │ Workflow    │  │ Vision Model│  │ Slot Filling│              │
+│  │ Engine      │  │ (UI Reader) │  │ Manager     │              │
+│  │ (Reasoning) │  │             │  │             │              │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘              │
+└─────────┼────────────────┼────────────────┼─────────────────────┘
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    CORE SERVICES                                 │
@@ -204,6 +215,7 @@ This document provides the technical roadmap for building Sathio from concept to
 | **Minimum SDK** | 21 (Android 5.0) | Wide device coverage |
 | **Target SDK** | 33+ (Android 13) | Latest features |
 | **Audio** | AudioRecord / speech_to_text | Voice capture |
+| **Automation** | AccessibilityService API | Active Agent actions (clicks/scrolls) |
 | **Offline DB** | Room (SQLite) | FAQ caching |
 | **Networking** | Retrofit + OkHttp | API calls |
 | **Image Loading** | Coil/Glide | Efficient caching |
@@ -224,24 +236,56 @@ This document provides the technical roadmap for building Sathio from concept to
 
 ### AI / ML Components
 
-| Component | Primary | Fallback |
-|-----------|---------|----------|
-| **ASR (Speech-to-Text)** | Bhashini API | Whisper (fine-tuned) |
-| **TTS (Text-to-Speech)** | Bhashini TTS | Coqui TTS |
-| **Intent Classification** | DistilBERT (fine-tuned) | IndicBERT |
-| **Semantic Search** | Sentence-Transformers | - |
-| **LLM (Phase 2+)** | LLaMA 3 (fine-tuned) | Gemma |
-| **Embeddings** | Multilingual SBERT | - |
+#### Voice & Language (All Indian Languages)
+
+| Component | Primary (Free) | Premium Alternative | Fallback (Offline) |
+|-----------|---------------|---------------------|-------------------|
+| **ASR (Speech-to-Text)** | Bhashini ASR API | Sarvam AI ASR | speech_to_text (Flutter) |
+| **TTS (Text-to-Speech)** | Bhashini TTS | Sarvam AI TTS (human-like) | flutter_tts (on-device) |
+| **Language Detection** | Bhashini Language ID | Sarvam AI | User preference fallback |
+| **Translation** | Bhashini NMT | Sarvam Translate | - |
+
+> **Decision Pending:** Bhashini (free, all 22 languages, govt API) vs Sarvam AI (human-like voice, natural conversation, paid).
+> Both should be implemented with a service abstraction layer so the choice can be swapped easily.
+
+#### AI Brain (Understanding + Planning)
+
+| Component | Primary | Fallback | Notes |
+|-----------|---------|----------|-------|
+| **Intent Classification** | Gemini 1.5 Flash | DistilBERT (fine-tuned) | Fast, handles Hindi/mixed |
+| **Action Planning (LAM)** | Gemini 1.5 Pro | GPT-4o | Multi-step task decomposition |
+| **Conversational AI** | Gemini 1.5 Flash | Sarvam-2B | Slot filling, follow-ups |
+| **Indian Context LLM** | Sarvam-2B | Gemini Flash | Natively understands PM-Kisan, Aadhaar etc. |
+| **Semantic Search** | Sentence-Transformers | Supabase pgvector | FAQ matching |
+| **Embeddings** | Multilingual SBERT | - | - |
+
+#### Vision AI (LAM Screen Reading)
+
+| Component | Primary | Fallback | Notes |
+|-----------|---------|----------|-------|
+| **Screen Understanding** | Gemini 1.5 Pro Vision | GPT-4o Vision | Reads screenshots, identifies UI elements |
+| **OCR (Camera/Images)** | Google ML Kit (on-device) | Gemini Vision | Bill reading, document scanning — works offline |
+| **CAPTCHA Solving** | Gemini Vision | - | Basic text CAPTCHAs only |
+
+#### Device Control (No external API needed)
+
+| Component | Technology | Notes |
+|-----------|-----------|-------|
+| **Tap, Type, Scroll** | Android Accessibility Service | Built-in Android API, free |
+| **Open Apps** | Android Intent System | Native Android |
+| **Read SMS (OTPs)** | Android SMS API | With user permission |
+| **System Overlay** | Android Window Manager | "Sathio is working..." floating pill |
+| **Agent Framework** | Custom State Machine | LangChain as optional abstraction |
 
 ### Databases
 
 | Database | Purpose | Tech |
 |----------|---------|------|
-| **Primary** | Users, transactions, sessions | PostgreSQL |
-| **Document** | FAQs, schemes, guides | MongoDB |
-| **Cache** | Sessions, frequent queries | Redis |
-| **Vector** | Semantic search embeddings | Pinecone / Milvus |
-| **Analytics** | Events, metrics | ClickHouse |
+| **Primary** | Users, transactions, sessions | PostgreSQL (Supabase) |
+| **Local Cache** | Offline data, preferences | Hive (Flutter) |
+| **Document** | FAQs, schemes, guides | Supabase JSONB |
+| **Vector** | Semantic search embeddings | Supabase pgvector |
+| **Analytics** | Events, metrics | Mixpanel / PostHog |
 
 ### Infrastructure
 
@@ -261,13 +305,110 @@ This document provides the technical roadmap for building Sathio from concept to
 
 | Integration | API | Purpose |
 |-------------|-----|---------|
-| **Bhashini** | https://bhashini.gov.in | ASR, TTS, Translation |
+| **Bhashini** | bhashini.gov.in | ASR, TTS, Language ID, Translation (FREE — all 22 languages) |
+| **Sarvam AI** | sarvam.ai | Premium ASR, TTS (human-like voice), Sarvam-2B LLM |
+| **Gemini** | Google AI Studio | Intent classification, action planning, Vision (screen reading) |
+| **GPT-4o** | OpenAI API | Fallback for Gemini (brain + vision) |
+| **Google ML Kit** | On-device | OCR, text recognition (offline, free) |
 | **UIDAI** | Aadhaar APIs | Identity verification |
 | **NSDL** | PAN APIs | Tax services |
 | **PM-Kisan** | Agriculture portal | Subsidy status |
 | **Razorpay** | Payment Gateway | UPI, cards |
 | **WhatsApp** | Business API | Escalation |
 | **Firebase** | FCM | Push notifications |
+
+### API Cost Estimate
+
+| Service | Free Tier | At Scale (10K users) |
+|---------|-----------|---------------------|
+| **Bhashini** | ✅ Always free | ₹0 |
+| **Sarvam AI** | ✅ Limited free | ~₹2,000-5,000/mo |
+| **Gemini** | ✅ Generous free | ~₹2,000-4,000/mo |
+| **GPT-4o** | ❌ Pay-per-use | Backup only |
+| **Supabase** | ✅ Free tier | ~₹1,500/mo |
+| **Firebase FCM** | ✅ Always free | ₹0 |
+| **Total MVP** | **₹0** | **~₹5,000-10,000/mo** |
+
+---
+
+## 5A. LAM ENGINE ARCHITECTURE
+
+### How the LAM Works (Technical)
+
+```
+User Voice → STT → Intent + Task Detection → Action Planner
+                                                    │
+                    ┌───────────────────────────────┘
+                    ▼
+            ┌──────────────────┐
+            │  ACTION PLANNER  │  ← Breaks task into micro-actions
+            │  (LLM Reasoning) │
+            └────────┬─────────┘
+                     │ Action Sequence
+                     ▼
+            ┌──────────────────┐
+            │  SCREEN READER   │  ← Takes screenshot, identifies UI elements
+            │  (Vision Model)  │
+            └────────┬─────────┘
+                     │ UI Element Map
+                     ▼
+            ┌──────────────────┐
+            │ ACTION EXECUTOR  │  ← Performs tap, type, scroll, navigate
+            │ (Accessibility   │
+            │  Service)        │
+            └────────┬─────────┘
+                     │
+          ┌──────────┴──────────┐
+          ▼                     ▼
+   ┌──────────────┐    ┌──────────────────┐
+   │ SLOT FILLER  │    │ SAFETY MONITOR   │
+   │ (Ask user    │    │ (Block dangerous │
+   │  for info)   │    │  actions)        │
+   └──────────────┘    └──────────────────┘
+```
+
+### Key Components
+
+#### 1. Android Accessibility Service
+- **Purpose:** Controls any app on the phone programmatically
+- **Capabilities:** Click, type, scroll, swipe, read screen text, navigate between apps
+- **Implementation:** Extends `AccessibilityService` class
+- **Permissions:** User grants once during onboarding
+- **Scope:** Can interact with ANY app, browser, or system UI
+
+#### 2. Vision-Language Model (Screen Reader)
+- **Purpose:** Understands what's on the screen — buttons, forms, text, images
+- **Model:** Gemini Flash / GPT-4o-mini (API-based) or on-device SLM
+- **Input:** Screenshot (compressed JPEG, ~100KB)
+- **Output:** Structured JSON of all UI elements with coordinates
+- **Latency:** <1.5 seconds per screen read
+- **Fallback:** Accessibility node tree parsing (faster, less accurate)
+
+#### 3. Action Planner (Agent Brain)
+- **Purpose:** Decomposes user request into ordered action sequence
+- **Model:** LLM with task-specific prompting
+- **Pre-mapped flows:** 20+ common tasks (Aadhaar, PM-Kisan, etc.) have hardcoded action sequences for reliability
+- **Dynamic planning:** For unknown tasks, LLM generates plan on-the-fly using VLM observations
+- **Error recovery:** If an action fails, replans with new screen state
+
+#### 4. Slot Filling Manager
+- **Purpose:** Collects user info conversationally when needed
+- **How:** Pauses execution → asks user → resumes with answer
+- **Storage:** User profile (name, state, district) stored for reuse. Sensitive data (Aadhaar, PAN) encrypted or asked fresh.
+- **OTP Handling:** Reads OTP from SMS (with permission) or asks user to speak it
+
+#### 5. Safety & Trust System
+
+| Control | Description |
+|---------|-------------|
+| **Floating Overlay** | Always visible — shows what Sathio is doing |
+| **Voice Narration** | Sathio speaks each action before doing it |
+| **Confirm Critical** | Explicit "Haan" required before payment/submit |
+| **Kill Switch** | Say "Ruko" or tap stop — instant halt |
+| **Action Blacklist** | Cannot: delete apps, change settings, access banking PINs |
+| **Transaction Cap** | >₹5,000 requires double confirmation |
+| **Audit Log** | Every action recorded with timestamp + screenshot |
+| **Timeout** | Auto-pause after 60s of no progress |
 
 ---
 
@@ -309,41 +450,41 @@ Week 4:
 └── Performance optimization (<3s latency)
 ```
 
-### Sprint 5-6: Government Services
+### Sprint 5-6: LAM Core Engine
 
 ```
 Week 5:
-├── Aadhaar download flow
-├── Aadhaar status check
-├── PAN application guidance
-├── Document checklist generation
-└── In-app browser integration
+├── Accessibility Service setup
+├── Basic actions: tap, type, scroll, navigate
+├── Screen capture and compression
+├── VLM integration for screen reading
+└── UI element detection and mapping
 
 Week 6:
-├── PM-Kisan eligibility checker
-├── PM-Kisan application steps
-├── Pension schemes info
-├── Ration card guidance
-└── External site deep-linking
+├── Action Planner (LLM-based)
+├── Pre-mapped flow for Aadhaar download
+├── Slot filling dialogue manager
+├── OTP reading from notifications
+└── Floating overlay UI (shows current action)
 ```
 
-### Sprint 7-8: Guided Mode + UI
+### Sprint 7-8: Task Flows + Safety
 
 ```
 Week 7:
-├── Step-by-step guided mode
-├── Progress indicator ("Step 2 of 5")
-├── Navigation controls (Next/Repeat/Pause)
-├── Visual highlighting
-└── Resume from last step
+├── Aadhaar download — fully autonomous
+├── PM-Kisan registration — fully autonomous
+├── PAN application — fully autonomous
+├── Cross-app navigation (browser ↔ UPI app)
+└── Error recovery and replanning
 
 Week 8:
-├── Icon-based home screen
-├── Quick access cards
-├── Bottom navigation
-├── Settings screen
-├── Language switcher
-└── Accessibility compliance (WCAG AA)
+├── Safety controls (confirm, kill switch, blacklist)
+├── Action audit logging
+├── Bill payment automation (electricity)
+├── Mobile recharge automation
+└── File download and save
+```
 ```
 
 ### Sprint 9-10: Integration & Testing
@@ -377,32 +518,34 @@ POST /api/v1/voice/transcribe
 
 POST /api/v1/query/process
 - Input: text query, user_id, language
-- Output: intent, response steps, action
+- Output: intent, task_plan, slot_requirements
 
 POST /api/v1/tts/synthesize
 - Input: text, language, voice_id
 - Output: audio file URL
 
-GET /api/v1/faq/{category}/{language}
-- Output: FAQ list for category
+POST /api/v1/lam/plan
+- Input: user_intent, screen_state, user_profile
+- Output: action_sequence[{type, target, value}]
+
+POST /api/v1/lam/read-screen
+- Input: screenshot (JPEG), context
+- Output: ui_elements[{type, text, bounds, clickable}]
+
+POST /api/v1/lam/slot-fill
+- Input: task_context, collected_data, missing_fields
+- Output: next_question, field_name
 
 POST /api/v1/user/register
 - Input: phone, OTP
 - Output: user_id, token
 
-GET /api/v1/user/profile
-- Output: preferences, history
+GET  /api/v1/user/profile
+- Output: preferences, history, saved_data
 
-POST /api/v1/payment/initiate
-- Input: amount, type
-- Output: payment_link (UPI)
-
-POST /api/v1/escalation/request
-- Input: query, user_id, type
-- Output: session_id, expected_wait
-
-GET /api/v1/notification/settings
-POST /api/v1/notification/settings
+POST /api/v1/task/log
+- Input: task_type, actions_taken, result, duration
+- Output: task_id
 ```
 
 ### Service Communication
@@ -824,8 +967,8 @@ sathio/
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** February 8, 2026  
+**Document Version:** 2.0 (LAM Architecture)  
+**Last Updated:** February 12, 2026  
 **Status:** Ready for Engineering Kickoff
 
 ---

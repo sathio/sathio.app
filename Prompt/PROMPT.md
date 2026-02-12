@@ -12,20 +12,39 @@
 ```
 Before we start building, please thoroughly analyze these documentation files in the ./Info/ folder:
 
-1. Read FINAL_PRD.md - Complete product requirements, features, monetization, user personas
-2. Read IMPLEMENTATION_PLAN.md - Technical architecture, tech stack, development phases
+1. Read FINAL_PRD.md - Complete product requirements, features, LAM architecture, monetization, user personas
+2. Read IMPLEMENTATION_PLAN.md - Technical architecture, LAM engine design, tech stack, development phases
 3. Read PROJECT_CONTEXT.md - Brand philosophy, voice design, team values
 4. Read UI_UX.md - Design system, colors, typography, components, screens
 5. Read PRD1, PRD2, PRD3, PRD4, PRD5 and FINAL_PRD
 
 After reading all files, confirm you understand:
-- What Sathio is (voice-first vernacular AI assistant for India)
-- Target users (farmers, shopkeepers, seniors, migrants)
-- Core features (voice interaction, government services, guided mode)
+- What Sathio is (a Large Action Model / LAM that autonomously controls the user's phone to complete any digital task via voice commands in their native language)
+- That Sathio is NOT just a chatbot or guide — it ACTS. It opens apps, fills forms, navigates websites, makes payments, downloads documents — all autonomously
+- Target users (farmers, shopkeepers, seniors, migrants who currently rely on cyber cafes)
+- Core LAM capabilities (Android Accessibility Service for device control, Vision-Language Model for screen reading, Action Planner for task decomposition, Slot Filling for conversational data collection)
+- Safety systems (floating overlay, kill switch, confirmation before payments, action blacklist)
 - Design language (Teal + Orange, Noto Sans, icon-heavy, 48dp touch targets)
-- Technical stack (Flutter, FastAPI, Supabase, Bhashini APIs)
+- Technical stack (Flutter, FastAPI, Supabase, Bhashini APIs, Gemini/VLM)
 
-Say "I've analyzed all documentation and I'm ready to build Sathio" when done.
+Say "I've analyzed all documentation and I'm ready to build Sathio — the phone-controlling AI agent" when done.
+
+IMPORTANT — Keep this in mind throughout ALL development:
+
+Sathio = Vernacular AI + Device Control + Task Automation (LAM) + Human-like Guidance
+
+It is ChatGPT + Alexa + Auto Form Filler + Phone Operator + Digital Cybercafe Assistant + Local Language Human Guide — all in one app.
+
+Sathio doesn't just respond. It executes actions on device. It interacts with apps, reads screens, fills fields, clicks buttons, and handles entire workflows.
+
+| It doesn't just... | It actually... |
+|---------------------|----------------|
+| Answer questions | Acts on the answer — opens the site, fills the form, downloads the result |
+| Guide the user | Does it for the user — while explaining each step in their language |
+| Understand language | Controls the phone — taps, types, scrolls, navigates across apps |
+| Provide information | Completes the task — books tickets, pays bills, shops, researches |
+
+Sathio is not just a language assistant. It is a Voice-First Local Action Model (LAM) for Bharat. It doesn't just answer. It acts.
 ```
 
 ---
@@ -92,12 +111,68 @@ Based on Sathio's requirements (India-first, offline-capable, scalable, cost-eff
 | **Backend** | Supabase Edge Functions | Free tier |
 | **Database** | Supabase PostgreSQL | Free (500MB) |
 | **Storage** | Supabase Storage | Free (1GB) |
-| **ML/Voice** | Bhashini APIs | Free (govt) |
-| **Fallback ML** | FastAPI on Railway | Free tier |
 | **Push Notifications** | Firebase FCM | Free |
 | **Analytics** | Supabase + Mixpanel | Free tier |
 
-**Total MVP Cost: ₹0 - ₹5,000/month** (scales as users grow)
+#### AI & Voice APIs
+
+| Layer | Primary (Free) | Premium Alternative | Offline Fallback |
+|-------|---------------|---------------------|-----------------|
+| **STT (Speech-to-Text)** | Bhashini ASR API | Sarvam AI ASR | speech_to_text (Flutter) |
+| **TTS (Text-to-Speech)** | Bhashini TTS | Sarvam AI TTS (human-like) | flutter_tts (on-device) |
+| **Language Detection** | Bhashini Language ID | Sarvam AI | User preference |
+| **Translation** | Bhashini NMT | Sarvam Translate | - |
+| **Intent Classification** | Gemini 1.5 Flash | - | DistilBERT |
+| **Action Planning (LAM)** | Gemini 1.5 Pro | GPT-4o | - |
+| **Indian Context LLM** | Sarvam-2B | Gemini Flash | - |
+| **Screen Reading (Vision)** | Gemini 1.5 Pro Vision | GPT-4o Vision | - |
+| **OCR** | Google ML Kit (on-device) | Gemini Vision | Works offline |
+| **Device Control** | Android Accessibility Service | - | Built-in, free |
+
+> **Note:** Bhashini (free, govt, 22 languages) vs Sarvam AI (human-like voice, paid) — decision pending.
+> Build with service abstraction layer so voice provider can be swapped easily.
+
+#### API Cost Estimate
+
+| Service | Free Tier | At Scale |
+|---------|-----------|----------|
+| Bhashini | ✅ Always free | ₹0 |
+| Sarvam AI | ✅ Limited free | ~₹2,000-5,000/mo |
+| Gemini | ✅ Generous free | ~₹2,000-4,000/mo |
+| Supabase | ✅ Free tier | ~₹1,500/mo |
+| Firebase FCM | ✅ Always free | ₹0 |
+| **Total MVP** | **₹0** | **~₹5,000-10,000/mo** |
+
+**Total MVP Cost: ₹0** (all free tiers, scales as users grow)
+
+### 🗺️ When to Use Each API (Phase → API Mapping)
+
+This section tells you WHICH API is used in WHICH prompt. Use this as a reference whenever building a feature.
+
+| API / Service | Used In Phase | Prompt Numbers | Purpose |
+|---------------|---------------|----------------|---------|
+| **Supabase Auth** | Phase 0, 1 | 0.2, 1.1, 1.2 | Phone OTP, Google login, guest auth, session management |
+| **Supabase Database** | Phase 8 | 8.1, 8.2, 8.3 | User profiles, FAQs, service data, audit logs |
+| **Supabase Storage** | Phase 4, 7 | 4.1, 7.2 | Audio file uploads, profile photo storage |
+| **Hive (Local)** | Phase 0, 2, 4.5 | 0.4, 2.1, 4.5.2 | Onboarding state, language preference, offline cache |
+| **Bhashini ASR** | Phase 4 | 4.2 (bhashini_service) | Speech-to-text in 22 Indian languages (FREE) |
+| **Bhashini TTS** | Phase 4 | 4.2 (bhashini_service) | Text-to-speech in Indian languages (FREE) |
+| **Bhashini NMT** | Phase 4 | 4.2 (bhashini_service) | Language translation between Indian languages |
+| **Bhashini Language ID** | Phase 4.5 | 4.5.1 | Auto-detect spoken language |
+| **Sarvam AI ASR** | Phase 4 | 4.2 (sarvam_service) | Premium speech recognition (human-like accuracy) |
+| **Sarvam AI TTS** | Phase 4 | 4.2 (sarvam_service) | Premium human-like voice synthesis |
+| **Sarvam-2B** | Phase 6 | 6.1, 6.2 | Indian context LLM for understanding local queries |
+| **Gemini 1.5 Flash** | Phase 4, 6 | 4.3, 6.1 | Intent classification, quick responses |
+| **Gemini 1.5 Pro** | Phase 6.5 | 6.5.3 | Action planning (LAM), task decomposition |
+| **Gemini 1.5 Pro Vision** | Phase 6.5 | 6.5.2, 6.5.3 | Screen reading, UI element identification |
+| **Google ML Kit OCR** | Phase 6.5 | 6.5.2 | On-device text extraction from screenshots |
+| **Android Accessibility** | Phase 6.5 | 6.5.1, 6.5.2 | Device control — tap, type, scroll, navigate |
+| **flutter_tts (Local)** | Phase 4 | 4.2 (local_tts_service) | Offline TTS fallback when no internet |
+| **speech_to_text (Local)** | Phase 4.5 | 4.5.2 | Offline STT using on-device recognition |
+| **Firebase FCM** | Phase 7 | 7.3 | Push notifications |
+| **dio (HTTP)** | All API phases | 4.2, 6.1, 6.5.3 | HTTP client for all external API calls |
+
+> **Decision Rule:** Default to Bhashini (free) for voice. Switch to Sarvam if budget allows (better quality). Use Gemini Flash for speed, Pro for complex reasoning/LAM.
 
 ---
 
@@ -130,8 +205,11 @@ Add these dependencies to pubspec.yaml:
 - just_audio (audio playback)
 - flutter_tts
 - speech_to_text
+- speech_to_text
 - lottie (animations)
 - flutter_animate (micro-animations)
+- url_launcher (for deep links)
+- android_intent_plus (for launching apps)
 
 Run flutter pub get and verify the project builds.
 ```
@@ -163,41 +241,67 @@ Add flutter_dotenv to pubspec.yaml for env file loading.
 Build and verify no errors.
 ```
 
-### Prompt 0.3 — Design System Setup
+### Prompt 0.3 — Design System Setup (Luma-Inspired)
 ```
-Read the UI_UX.md file in ./Info/ and create the complete design system:
+Read the UI_UX.md file in ./Info/ and create the complete Luma-inspired design system:
+
+DESIGN REFERENCE: Luma iOS app — clean, minimal, premium, dark-mode-first.
+Logo: Orange gradient squircle with white circle and 4-pointed sparkle star.
 
 1. Create lib/core/theme/colors.dart:
-   - Sathio Teal: #00BFA5
-   - Saffron Orange: #FF9800
-   - Deep Blue: #1E3A5F
-   - All gray scale (50-900)
-   - Success (#4CAF50), Error (#E53935), Warning (#FFC107)
-   - Dark mode variants
+   - PRIMARY: Sathio Orange (#F58220), Orange Light (#F7A94B), Orange Deep (#E06B10)
+   - DARK THEME (default):
+     - Background: #0D0D0D (near-black)
+     - Surface: #1A1A1A (cards, modals)
+     - Surface Elevated: #252525 (hover states)
+     - Border: #2A2A2A (subtle dividers)
+     - Text Primary: #FFFFFF
+     - Text Secondary: #A0A0A0
+     - Text Tertiary: #666666
+   - LIGHT THEME:
+     - Background: #FAFAFA
+     - Surface: #FFFFFF
+     - Border: #E8E8E8
+     - Text Primary: #111111
+     - Text Secondary: #666666
+   - SEMANTIC: Success (#22C55E), Error (#EF4444), Info (#3B82F6), Warning (#F59E0B)
 
 2. Create lib/core/theme/typography.dart:
-   - Use Noto Sans as primary font (supports Devanagari, Tamil, Bengali)
-   - Implement full type scale: displayLarge, headlineMedium, bodyLarge, etc.
-   - Support scalable fonts (use sp units)
+   - Primary font: Inter (Google Fonts) — clean, modern, geometric
+   - Fallback: Outfit (Google Fonts)
+   - Indian scripts: Noto Sans Devanagari, Tamil, Bengali, Telugu, Kannada, Gujarati, Gurmukhi, Malayalam, Oriya
+   - Type scale:
+     - Display: 36px Bold
+     - H1: 28px Bold
+     - H2: 22px SemiBold
+     - H3: 18px SemiBold
+     - Body Large: 16px Medium
+     - Body: 14px Regular
+     - Button: 14px SemiBold
+     - Caption: 12px Regular
+     - Overline: 10px SemiBold
 
 3. Create lib/core/theme/spacing.dart:
-   - Spacing tokens: xs(4), sm(8), md(16), lg(24), xl(32), xxl(48)
-   - Border radius: sm(4), md(8), lg(16), xl(24), full(9999)
+   - Spacing tokens: xs(4), sm(8), md(16), lg(24), xl(32), 2xl(48)
+   - Border radius: sm(8), md(12), lg(16), xl(24), pill(100)
 
 4. Create lib/core/theme/app_theme.dart:
-   - Light theme with Material 3
-   - Dark theme (complete implementation)
-   - Custom color scheme extension
+   - DARK theme as DEFAULT (Luma-inspired)
+   - Light theme as alternative
+   - Material 3 with custom ColorScheme
+   - Orange as seed color
+   - Custom extension for surface/border colors
+   - System toggle + manual override (saved to Hive)
 
-5. Download Noto Sans fonts and add to assets/fonts/
-   - Noto Sans regular, medium, semibold, bold
-   - Noto Sans Devanagari (for Hindi, Marathi)
-   - Noto Sans Tamil
-   - Noto Sans Bengali
+5. Download fonts and add to assets/fonts/:
+   - Inter: regular, medium, semibold, bold
+   - Noto Sans Devanagari, Tamil, Bengali, Telugu, Kannada, Gujarati, Gurmukhi, Malayalam, Oriya
 
 6. Update pubspec.yaml with font assets
 
-Build and verify theme applies correctly.
+7. Add Phosphor Icons package (for modern icon style alongside Material Icons)
+
+Build and verify dark theme applies correctly with orange accents.
 ```
 
 ### Prompt 0.4 — Core Constants & Config
@@ -207,8 +311,13 @@ Create configuration files:
 1. lib/core/constants/app_constants.dart:
    - App name: "Sathio"
    - Tagline: "Main hoon na"
-   - Supported languages: ['hi', 'bn', 'ta', 'mr']
-   - Language names: {'hi': 'हिंदी', 'bn': 'বাংলা', 'ta': 'தமிழ்', 'mr': 'मराठी'}
+   - Supported languages (ALL Indian languages, phased):
+     - Phase 1 (MVP): ['hi', 'bn', 'ta', 'mr']
+     - Phase 2: ['te', 'kn', 'gu', 'pa']
+     - Phase 3: ['ml', 'or', 'as', 'ur']
+     - Phase 4: All 22 scheduled languages
+   - Language names map: {'hi': 'हिंदी', 'bn': 'বাংলা', 'ta': 'தமிழ்', 'mr': 'मराठी', 'te': 'తెలుగు', 'kn': 'ಕನ್ನಡ', 'gu': 'ગુજરાતી', 'pa': 'ਪੰਜਾਬੀ', 'ml': 'മലയാളം', 'or': 'ଓଡ଼ିଆ', 'as': 'অসমীয়া', 'ur': 'اردو'}
+   - Auto-detect enabled: true (Bhashini language ID API)
    - Max recording duration: 60 seconds
    - API timeout: 30 seconds
 
@@ -230,6 +339,22 @@ Create configuration files:
 5. Update pubspec.yaml to include all asset folders.
 
 Build and verify no errors.
+```
+
+### Prompt 0.5 — India Data Constants
+```
+Create India location data constants:
+
+1. Read Info/INDIA_STATES_DISTRICTS.md first. It contains the full list of 36 States/UTs and 700+ districts.
+
+2. Create lib/core/constants/india_data.dart:
+   - Create a constant Map<String, List<String>> indiaStatesDistricts.
+   - COPY the entire data structure from INDIA_STATES_DISTRICTS.md into this map.
+   - Create helper method: List<String> getStates() => sort alphabetically.
+   - Create helper method: List<String> getDistricts(String state).
+   - Create helper method: List<String> searchLocation(String query) -> returns matching "District, State" strings.
+
+3. Verify the map is complete and syntax is correct.
 ```
 
 ---
@@ -305,214 +430,482 @@ Style everything per UI_UX.md (Teal primary, large touch targets).
 
 ---
 
-## 🎓 PHASE 2: DUOLINGO-STYLE ONBOARDING
+## 🎓 PHASE 2: LUMA-STYLE ONBOARDING
+
+> **Design Reference:** Luma iOS onboarding flow
+> https://mobbin.com/flows/24035767-44e2-4688-8869-e891996fabc2
+>
+> **Key Design Patterns from Luma:**
+> - Light pastel gradient welcome screen (NOT dark mode — onboarding is warm & inviting)
+> - Floating 3D icons/emoji orbiting around a central sparkle symbol
+> - White bottom sheet slides up for auth (stacked pill buttons)
+> - Clean, minimal form screens with lots of whitespace
+> - Black pill buttons (premium feel) — NOT orange during onboarding
+> - Small gray icons as section identifiers (chat bubble, phone, camera)
+> - "Skip for now" as text links
+> - Simple back arrow (no circle, no background)
+> - Number pad / keyboard auto-opens on input screens
+
+### Prompt 2.0 — Splash Screen (Launch Animation)
+```
+Create the splash/launch screen:
+
+lib/features/onboarding/screens/splash_screen.dart:
+
+DESIGN — Premium, Minimal, Luma-inspired:
+   - Background: Pure White (#FFFFFF)
+   - Center: Sathio Sparkle Logo (80x80dp)
+     - Gradient: Orange (#F58220) to Light Orange (#F7A94B)
+     - Animation: 
+       1. Scale up from 0 to 1 (spring, 600ms)
+       2. Subtle rotation (-10° to 10°, loop)
+   - Text (below logo): "sathio"
+     - Font: Inter Bold, 24px, #111111, tracking 1.2
+     - Animation: Fade in + Slide up (delay 400ms, duration 600ms)
+
+LOGIC & ROUTING:
+   - Wait 2 seconds (min duration for branding)
+   - Check Hive/Supabase for auth state
+   
+   IMPORTANT: Since Home and Onboarding screens might not exist yet:
+   1. Create valid placeholder widgets in the same file or a temporary file:
+      - `class HomeScreen extends StatelessWidget { ... }` (Placeholder)
+      - `class OnboardingScreen extends StatelessWidget { ... }` (Placeholder)
+   2. Setup navigation to use these placeholders for now.
+   3. We will implement the REAL screens in Prompt 2.1 and 3.1.
+   
+   - If logged in → Go to Home
+   - If not logged in → Go to Onboarding
+   - Use simple FadeTransition for route replacement
+```
 
 ### Prompt 2.1 — Onboarding Flow Design
 ```
-Create a Duolingo-inspired onboarding experience:
+Create a Luma-inspired onboarding experience:
 
-Reference: Duolingo's onboarding is famous for being:
-- Progressive (one thing at a time)
-- Visual (icons, illustrations, animations)
-- Interactive (user makes choices, not just reading)
-- Encouraging (positive feedback at each step)
+Reference: Luma's onboarding is famous for being:
+- Clean (lots of whitespace, minimal elements)
+- Light + Premium (pastel gradients, NOT dark mode)
+- Bottom-sheet auth (slides up over illustration)
+- Progressive (one input per screen)
+- Skippable (but encouraged to complete)
 
 Design the flow:
-1. Welcome → 2. Language Selection → 3. What brings you here? → 4. Voice Demo → 5. Permission → 6. Quick Win → 7. Profile Setup (optional)
+1. Welcome (hero illustration) → 2. Get Started (bottom sheet auth) → 3. Phone/OTP → 4. Language Selection → 5. Profile Setup → 6. Interest Selection → 7. Voice Demo → 8. Permissions → 9. Home
 
 Create lib/features/onboarding/onboarding_flow.dart:
-   - List of onboarding steps
-   - Progress tracker
-   - Navigation between steps
-   - Skip option (but discouraged)
+   - PageView-based navigation (no AppBar — just back arrow icon)
+   - Smooth slide transitions between screens
+   - No progress dots (Luma doesn't use them — keeps it clean)
+   - Skip options on non-critical screens
    
 Create lib/features/onboarding/onboarding_provider.dart:
    - Current step index
-   - Selections made
+   - Selections made (language, interests)
+   - Auth state (phone, Google, guest)
    - Complete status
    - Store progress in Hive
 ```
 
-### Prompt 2.2 — Welcome Screen
+### Prompt 2.2 — Welcome Screen (Luma Hero)
 ```
-Create the welcome screen (Step 1):
+Create the welcome/hero screen (Step 1):
 
 lib/features/onboarding/screens/welcome_screen.dart:
-   - Full screen, off-white background
-   - Sathio mascot/logo animation (Lottie or animated)
-   - Large friendly text: "Namaste! 🙏"
-   - Subtitle: "Main Sathio hoon, aapka digital saathi"
-   - Animated illustration of a friendly assistant
-   - Primary button: "Shuru karein" (Let's start)
-   - Progress dots at bottom (1 of 7)
 
-Add subtle entrance animations:
-   - Logo fades in and scales up
-   - Text slides up
-   - Button bounces in
+DESIGN — Exactly like Luma's welcome screen:
 
-Use Lottie animation for the mascot if available, otherwise use a simple animated illustration.
+   Background:
+   - Soft pastel gradient (light pink-blue-cream, subtle — NOT dark)
+   - Example: LinearGradient from #F8F0FF (top-left) → #E8F4FD (center) → #FFF8F0 (bottom-right)
+   - Very subtle, barely noticeable gradient
+
+   Hero Illustration (center, upper 60% of screen):
+   - Central element: Sathio sparkle logo (4-pointed star, orange gradient)
+     - Size: 80x80dp
+     - Sits in center of a series of concentric light gray circles
+   - Floating 3D icons orbiting around the sparkle (like planets around sun):
+     - 📱 Phone icon (representing phone control)
+     - 🏛️ Government building (sarkari seva)
+     - 💡 Lightbulb (bill payment)
+     - 🎤 Microphone (voice interaction)
+     - 💊 Health cross (health info)
+     - 📚 Book (education)
+     - Use 3D emoji-style or Lottie animated icons
+     - Each floating in a soft colored circle (pastel purple, blue, green, etc.)
+     - Subtle floating animation (slow up/down drift, 3-4s loop)
+   - Concentric orbit circles: very light gray (#E8E8E8, 1px stroke)
+
+   Text section (below illustration):
+   - Logo: "sathio" in lowercase with sparkle icon (like Luma's "luma✦")
+     - Font: Inter Bold, 20px, dark gray #333333
+   - Headline: "Your Digital Companion"
+     - Font: Inter Bold, 28px, #111111
+   - Subheadline: "Start Your Journey Here" 
+     - Font: Inter SemiBold, 22px, orange #F58220
+
+   Bottom:
+   - "Get Started" button
+     - Full-width pill (24px side padding)
+     - Background: #111111 (near-black — like Luma, NOT orange)
+     - Text: White, Inter SemiBold, 16px
+     - Height: 56dp
+     - Corner radius: 100px (pill)
+     - Shadow: subtle
+   - Safe area padding at bottom
+
+Animations:
+   - Background gradient: subtle slow shift (15s loop)
+   - Floating icons: gentle drift animation (staggered start)
+   - Sparkle: subtle pulse/glow
+   - Text: fade in sequence (logo → headline → subheadline, 200ms each)
+   - Button: slides up from below (300ms, ease-out)
 ```
 
-### Prompt 2.3 — Language Selection (Interactive)
+### Prompt 2.3 — Auth Bottom Sheet (Luma-Style)
 ```
-Create language selection (Step 2) - Duolingo style:
+Create the auth bottom sheet (Step 2):
+
+lib/features/onboarding/screens/auth_bottom_sheet.dart:
+
+DESIGN — Exactly like Luma's "Get Started" bottom sheet:
+
+When user taps "Get Started" on welcome screen:
+   - The welcome illustration stays visible (slightly blurred/dimmed)
+   - A WHITE bottom sheet slides up from bottom
+   - Spring animation (bouncy, 400ms)
+
+Bottom Sheet contents:
+   - Top-left: Sathio sparkle icon (small, 40x40dp, gray #999999)
+   - Top-right: Close "X" button (gray, subtle)
+   
+   - Title: "Let's Get Started"
+     - Font: Inter Bold, 24px, #111111
+   
+   - Description: "Sathio handles your digital tasks. Sign in to begin."
+     - Font: Inter Regular, 14px, #666666
+     - Max 2 lines
+   
+   - Auth buttons (stacked, full-width pills):
+     1. "Continue with Phone" 
+        - Background: #111111 (black pill)
+        - Text: White
+        - Icon: Phone icon (left)
+        - Height: 52dp
+     
+     2. "Continue with Google"
+        - Background: #F5F5F5 (light gray)
+        - Border: 1px #E0E0E0
+        - Text: #333333
+        - Icon: Google "G" icon (left)
+        - Height: 52dp
+     
+     3. "Continue as Guest"
+        - No background, just text link
+        - Color: #666666
+        - Font: Inter Medium, 14px
+   
+   - Bottom spacing: safe area + 16dp
+   
+   Sheet styling:
+   - Background: #FFFFFF
+   - Corner radius: 24px (top corners only)
+   - Handle bar: 40x4dp centered, #D0D0D0, top 12dp
+   - Shadow: 0 -4px 20px rgba(0,0,0,0.1)
+
+Tap "Continue with Phone" → navigate to phone input screen
+Tap "Continue with Google" → trigger Supabase Google One-Tap
+Tap "Continue as Guest" → skip auth, go to language selection  
+Tap "X" → dismiss sheet, back to welcome
+```
+
+### Prompt 2.4 — Phone Number Input (Luma-Style)
+```
+Create phone number input screen (Step 3a):
+
+lib/features/onboarding/screens/phone_input_screen.dart:
+
+DESIGN — Exactly like Luma's "Add Your Phone" screen:
+
+   Background: White / very light gray (#FAFAFA)
+   
+   Top: Simple back arrow (←) top-left, no circle, no background
+     - Icon: arrow_back, 24dp, #111111
+     - Padding: 16dp from left, 12dp from top
+   
+   Section icon: Small gray phone icon (40x40dp)
+     - Background: #F5F5F5 circle
+     - Icon: phone outlined, #666666
+     - Position: below back arrow, left-aligned, 24dp padding
+   
+   Title: "Enter Your Number"
+     - Font: Inter Bold, 24px, #111111
+     - Below icon, left-aligned
+   
+   Description: "We'll send a code for verification"
+     - Font: Inter Regular, 14px, #666666
+     - 1 line, below title
+   
+   Phone input:
+     - Full-width, left-aligned text
+     - "+91 " prefix (fixed, gray)
+     - Input: large text, 22px, Inter Medium, #111111
+     - No visible border — just bottom line or very subtle container
+     - Background: #F5F5F5 rounded (16px radius)
+     - Padding: 16dp
+     - Auto-focus, keyboard opens immediately (number pad)
+   
+   Skip option: "Skip for now" text link
+     - Font: Inter Medium, 14px, #666666
+     - Below input, left-aligned
+   
+   Bottom: "Next" button
+     - Full-width pill, black (#111111)
+     - Text: White, "Next"
+     - Height: 56dp
+     - Positioned above keyboard
+     - Disabled state (gray) until 10 digits entered
+     - Enabled: #111111 background
+
+Number pad: Use system keyboard (phone type)
+```
+
+### Prompt 2.5 — OTP Verification (Luma-Style)
+```
+Create OTP verification screen (Step 3b):
+
+lib/features/onboarding/screens/otp_screen.dart:
+
+DESIGN — Exactly like Luma's "Enter Code" screen:
+
+   Background: White / #FAFAFA
+   
+   Top: Back arrow (←) same style as phone screen
+   
+   Section icon: Small gray chat bubble icon (40x40dp)
+     - Background: #F5F5F5 circle
+     - Icon: chat_bubble_outline, #666666
+   
+   Title: "Verify Code"
+     - Inter Bold, 24px, #111111
+   
+   Description: "Code sent to +91 98XXXXX23"
+     - Inter Regular, 14px, #666666
+   
+   OTP boxes: 6 individual digit boxes in a row
+     - Each box: 48x56dp
+     - Background: #F5F5F5
+     - Border radius: 12px
+     - Text: Inter Bold, 28px, #111111 — centered
+     - Gap between boxes: 8dp
+     - Active box: subtle border (#D0D0D0)
+     - Filled box: shows digit clearly
+     - Empty: shows thin dash or cursor placeholder
+     
+     Behavior:
+     - Auto-focus first empty box
+     - Auto-advance to next box on digit entry
+     - Delete goes to previous box
+     - Supports paste (all 6 digits at once)
+     - Auto-submit when all 6 filled
+   
+   Resend: "Resend Code (30s)" timer link below OTP
+     - Disabled for 30 seconds (gray)
+     - After 30s: clickable, orange text #F58220
+   
+   Bottom: "Next" button
+     - Same style as phone screen (black pill)
+     - Disabled until all 6 digits
+     - Loading state when verifying
+   
+   Number pad: system keyboard (number type)
+```
+
+### Prompt 2.6 — Language Selection (Sathio Custom)
+```
+Create language selection screen (Step 4):
 
 lib/features/onboarding/screens/language_selection_screen.dart:
-   - Header: "Kaunsi bhasha mein baat karein?" (with translation hint)
-   - 4 large language cards (not small buttons):
-     - Each card: Flag icon + Native script name + English name
-     - Hindi: 🇮🇳 हिंदी (Hindi)
-     - Bengali: 🇮🇳 বাংলা (Bengali)
-     - Tamil: 🇮🇳 தமிழ் (Tamil)
-     - Marathi: 🇮🇳 मराठी (Marathi)
+
+DESIGN — Clean, Luma-inspired but Sathio-specific:
+
+   Background: White / #FAFAFA
    
-   - Tap card → plays voice sample: "Main Hindi mein baat kar sakta hoon"
-   - Selected card gets teal border + checkmark animation
-   - Subtle celebration (confetti or sparkle) on selection
-   - Continue button appears after selection
-   - Progress dots (2 of 7)
-
-Make it feel like a choice, not a form.
-```
-
-### Prompt 2.4 — Use Case Selection
-```
-Create "What brings you here?" screen (Step 3):
-
-lib/features/onboarding/screens/use_case_screen.dart:
-   - Header: "Aap Sathio se kya karna chahte ho?" (in selected language)
+   Top: Back arrow
    
-   - 4-6 tappable cards with icons:
-     - 📄 "Sarkari kaam" (Government services) - Aadhaar, PAN, etc.
-     - 💡 "Bill payment" (Utilities) - Bijli, mobile, gas
-     - 💊 "Health jaankari" (Health info) - Schemes, hospitals
-     - 📚 "Padhai mein madad" (Education) - Scholarships
-     - 💰 "Loan/Banking" (Financial) - Loans, account
-     - ❓ "Kuch aur" (Something else)
+   Section icon: Globe/language icon (40x40dp, gray circle)
    
-   - Multiple selection allowed (tap to select/deselect)
-   - Visual feedback: selected cards glow/highlight
-   - Personalization message: "Main aapke liye ready ho jaunga!"
-   - Continue button
-   - Progress dots (3 of 7)
+   Title: "Choose Your Language"
+     - Inter Bold, 24px, #111111
+   
+   Description: "Sathio speaks your language"
+     - Inter Regular, 14px, #666666
+   
+   Language grid (3 columns, scrollable):
+     Each card:
+     - Background: White
+     - Border: 1px #E8E8E8
+     - Border radius: 16px
+     - Padding: 16dp
+     - Height: 80dp
+     - Content: Native script name (center, Inter SemiBold, 16px)
+       - Below: English name (12px, #999999)
+     
+     Selection state:
+     - Border: 2px solid #F58220 (orange)
+     - Background: #FFF5EB (very subtle orange tint)
+     - Checkmark: small orange circle with white check, top-right
+     
+     Tap: plays voice preview "I can speak in English/Hindi"
+   
+   Languages MVP (show all, first 4 highlighted):
+     - हिंदी (Hindi) ★
+     - বাংলা (Bengali) ★
+     - தமிழ் (Tamil) ★
+     - मराठी (Marathi) ★
+     - తెలుగు (Telugu)
+     - ಕನ್ನಡ (Kannada)
+     - ગુજરાતી (Gujarati)
+     - ਪੰਜਾਬੀ (Punjabi)
+     - മലയാളം (Malayalam)
+   
+   ★ = MVP supported with voice, others = text-only initially
+   
+   Bottom: "Continue" button (black pill, enabled after selection)
 
-This helps personalize the home screen later.
+Single selection only. Selection saved to Hive + provider.
 ```
 
-### Prompt 2.5 — Voice Demo Screen
+### Prompt 2.7 — Profile Setup Luma Style (Avatar & Location)
 ```
-Create interactive voice demo (Step 4):
+Create profile setup screen (Step 5):
+
+DESIGN — Exactly like Luma's "Your Profile" screen:
+
+1. Read UI_UX.md Section 6.7 (Avatar System) and Section 6.2 (Inputs).
+2. Read lib/core/constants/india_data.dart (created in Prompt 0.5).
+
+3. Create lib/features/onboarding/widgets/avatar_selector.dart:
+   - 80x80dp circular avatar display
+   - If image selected: show image
+   - If no image: show one of the 12 preset avatars (by index 1-12)
+   - Camera badge (bottom-right)
+   - On tap: Open modal bottom sheet
+     - "Choose Avatar" grid (12 SVG/PNG assets from UI_UX.md)
+     - "Take Photo" option (camera/gallery)
+     - Highlighting selected avatar (orange border)
+
+4. Create lib/features/onboarding/screens/profile_setup_screen.dart:
+   - Luma-style pastel gradient header (top 25%)
+   - White content area (bottom 75%)
+   
+   Items:
+   - Avatar Selector (centered, overlapping header/body)
+   - Title: "Create Your Profile"
+   - Description: "Tell us a bit about yourself"
+   
+   Form:
+   - Name Input (Underline style, label: "Your Name")
+   - State Dropdown (Searchable, label: "Your State")
+   - District Dropdown (appears ONLY after state selected, populated from getDistricts(state))
+     - Both dropdowns use Luma styling (minimal, clean)
+   
+   - "Continue" button (Black pill)
+   - "Do this later" (Skip) link
+
+5. Logic:
+   - Randomly assign an avatar index (1-12) on init
+   - Save selection to OnboardingProvider (avatarIndex, name, state, district)
+   - Persist to Hive box 'user_profile'
+   - Sync to Supabase 'profiles' table (if auth exists)
+
+Build and verify the avatar grid and state-district dependency works.
+```
+
+### Prompt 2.8 — Interest Selection
+```
+Create interest/use-case selection screen (Step 6):
+
+lib/features/onboarding/screens/interest_screen.dart:
+
+DESIGN — Clean card grid:
+
+   Background: White / #FAFAFA
+   Top: Back arrow
+   
+   Title: "How can we help you?"
+     - Inter Bold, 22px, #111111
+   
+   Description: "We'll personalize your experience"
+     - Inter Regular, 14px, #666666
+   
+   Interest cards (2 columns, scrollable):
+     Each card:
+     - Background: White
+     - Border: 1px #E8E8E8
+     - Border radius: 16px
+     - Padding: 16dp
+     - Height: auto (icon + text)
+     - Content:
+       - Emoji/icon: 32x32dp, centered top
+       - Title: Inter SemiBold, 14px, #111111, center
+     
+     Cards:
+     - 🏛️ Govt Schemes
+     - 💡 Bill Payment
+     - 🏥 Health Info
+     - 📚 Education
+     - 🛒 Shopping Help
+     - 📱 Phone Tasks
+     - 💰 Banking/Loan
+     - ❓ Something Else
+     
+     Selection: orange border (2px #F58220) + subtle orange bg (#FFF5EB)
+     Multi-select allowed
+   
+   Bottom: "Let's Go" button (black pill)
+     - Enabled regardless of selection
+     - If nothing selected → still proceeds (default all categories)
+```
+
+### Prompt 2.9 — Voice Demo & Permissions
+```
+Create voice demo + permission screen (Step 7):
 
 lib/features/onboarding/screens/voice_demo_screen.dart:
-   - Header: "Dekho main kaise kaam karta hoon"
-   
-   - Animated demonstration:
-     1. Show a sample query appearing: "Aadhaar kaise download karein?"
-     2. Show mic listening animation
-     3. Show Sathio "thinking"
-     4. Show response card with steps
-   
-   - OR interactive mini-demo:
-     - "Mic button dabao aur bolo: Namaste Sathio"
-     - User taps and says it
-     - Sathio responds: "Namaste! Main sun sakta hoon. Bahut badhiya!"
-     - Celebration animation 🎉
-   
-   - Skip option: "Baad mein try karunga"
-   - Continue button
-   - Progress dots (4 of 7)
 
-This builds confidence before first real use.
-```
+DESIGN — Simple, encouraging:
 
-### Prompt 2.6 — Permission Screen
-```
-Create permission request screen (Step 5):
-
-lib/features/onboarding/screens/permission_screen.dart:
-   - Header: "Kuch permissions chahiye"
+   Background: White / #FAFAFA
    
-   - Permission cards (one at a time or all together):
-     - 🎤 Microphone: "Aapki awaaz sunne ke liye" 
-       - Required badge
-     - 🔔 Notifications: "Important updates ke liye"
-       - Optional badge
-     - 📍 Location: "Aapke state ki schemes dikhane ke liye"
-       - Optional badge
+   Center content:
+   - Sathio sparkle icon (64x64, orange gradient, subtle pulse)
+   - Title: "Give it a Try!"
+     - Inter Bold, 24px, #111111
+   - Description: "Tap the mic and say: Hello Sathio"
+     - Inter Regular, 16px, #666666
    
-   - Each permission has:
-     - Icon
-     - Why we need it (simple explanation)
-     - Allow button
-     - Visual confirmation when granted (checkmark)
+   Large mic button (center):
+   - Size: 80x80dp, circular
+   - Background: #111111 (black)
+   - Icon: mic, white, 32dp
+   - Tap → request mic permission (if not granted)
+   - On permission granted → start listening
+   - On speech recognized:
+     - Show "Namaste! Main sun sakta hoon! 🎉" response
+     - Success animation (Lottie checkmark)
    
-   - Handle denial gracefully
-   - Progress dots (5 of 7)
+   "Skip for now" text link below mic
    
-Use permission_handler package for actual permission requests.
-```
-
-### Prompt 2.7 — Quick Win Screen
-```
-Create the "Quick Win" experience (Step 6):
-
-lib/features/onboarding/screens/quick_win_screen.dart:
-   - Header: "Chalo ek choti si madad karte hain!"
+   Bottom: "Aage Badhein" button (black pill)
    
-   - Present a simple, satisfying task:
-     - "Aaj ka mausam jaano" (weather)
-     - OR "Emergency numbers dekho"
-     - OR "Aadhaar helpline number"
+   Permission flow:
+   - Mic permission requested on first tap
+   - If denied → friendly message, allow to skip
+   - Notification permission: requested via system dialog after voice demo
    
-   - User taps → instant useful result
-   - Big celebration: "Dekha! Kitna aasan tha!"
-   - Gamification: "Aapne pehla task complete kiya! 🌟"
-   
-   - This is crucial: User feels success before they even start
-   - Continue button: "Ab asli kaam shuru karein"
-   - Progress dots (6 of 7)
-```
-
-### Prompt 2.8 — Profile Setup (Optional)
-```
-Create optional profile setup (Step 7):
-
-lib/features/onboarding/screens/profile_setup_screen.dart:
-   - Header: "Thoda apne baare mein batao (optional)"
-   
-   - Simple form:
-     - Name input: "Aapka naam" (optional)
-     - State dropdown: "Aap kahan rehte ho?" (for state-specific schemes)
-     - District dropdown: (appears after state selection)
-   
-   - Benefits shown: "State select karne se local schemes dikhengi"
-   
-   - Two buttons:
-     - "Save karein" (Primary)
-     - "Baad mein" (Skip - takes to home)
-   
-   - Progress dots (7 of 7, completed!)
-   
-   - After completion: Navigate to Home with welcome back message
-```
-
-### Prompt 2.9 — Onboarding Complete Animation
-```
-Create completion celebration:
-
-lib/features/onboarding/screens/onboarding_complete_screen.dart:
-   - Full screen celebration
-   - Confetti animation (Lottie)
-   - Sathio mascot happy animation
-   - Text: "Badhai ho! Ab aap ready ho! 🎉"
-   - Subtitle: "Jab bhi madad chahiye, main yahan hoon"
-   
-   - Auto-dismiss after 3 seconds → Home screen
-   - OR tap anywhere to proceed immediately
-   
-   - Store onboarding_complete = true in Hive
-   - Never show onboarding again for this user
+After this → Navigate to Home (onboarding complete)
+Store onboarding_complete = true in Hive. Never show onboarding again.
 ```
 
 ---
@@ -524,36 +917,40 @@ lib/features/onboarding/screens/onboarding_complete_screen.dart:
 Create reusable button components based on UI_UX.md specs:
 
 1. lib/shared/widgets/buttons/primary_button.dart:
-   - Height: 56dp, full rounded corners (28dp radius)
-   - Teal background (#00BFA5), white text
-   - Loading state with circular spinner
-   - Disabled state (gray #BDBDBD)
+   - Height: 56dp, pill shape (radius 100px)
+   - Default: Near-black background (#111111), white text (for onboarding)
+   - Variant: Orange gradient background (#F58220 → #F7A94B), white text (for main app)
+   - Loading state with circular spinner (white)
+   - Disabled state (gray #CCCCCC bg, #999999 text)
+   - Press animation: scale 0.97 (100ms)
    - Haptic feedback on press
-   - onPressed callback, child widget, isLoading, isEnabled
+   - Props: onPressed, child, isLoading, isEnabled, variant (dark/orange)
 
 2. lib/shared/widgets/buttons/secondary_button.dart:
-   - Outlined variant, 2dp teal border
-   - Transparent background
-   - Teal text
+   - Outlined variant, 1px border (#E0E0E0 light / #2A2A2A dark)
+   - Background: #F5F5F5 (light) / #1A1A1A (dark)
+   - Text: #333333 (light) / white (dark)
+   - Pill shape
 
 3. lib/shared/widgets/buttons/text_button_custom.dart:
-   - No background, just teal text
-   - For "Skip", "Later" actions
+   - No background, just text
+   - Color: #666666 (default) or #F58220 (orange variant)
+   - For "Skip for now", "Later" actions
 
 4. lib/shared/widgets/buttons/icon_button_circular.dart:
    - 48x48dp circle
-   - Icon centered
+   - Background: transparent or #F5F5F5
+   - Icon centered (24dp)
    - Optional label below
 
 5. lib/shared/widgets/buttons/mic_button.dart:
-   - Large 72x72dp circular button
-   - Teal background with white mic icon (36x36)
+   - Large 64x64dp circular button
+   - Orange gradient background (#F58220 → #F7A94B) with white mic icon (28x28)
    - Three states: 
-     - idle: subtle pulse animation
-     - listening: animated waveform inside + glow
-     - processing: spinning indicator
-   - Use AnimationController for pulse
-   - Shadow elevation 8dp
+     - idle: subtle breathing pulse animation (orange glow)
+     - listening: animated waveform inside + glow intensifies
+     - processing: three bouncing dots
+   - Shadow: 0 4px 16px rgba(245, 130, 32, 0.3)
 
 Export all from lib/shared/widgets/buttons/buttons.dart
 ```
@@ -573,9 +970,9 @@ Create card components per UI_UX.md:
 2. lib/shared/widgets/cards/step_card.dart:
    - For guided mode steps
    - 12dp corner radius
-   - Light tinted background (#FAFAFA)
-   - Active state: 4dp teal left border
-   - Step number badge (24dp teal circle with white number)
+   - Light tinted background (#F5F5F5)
+   - Active state: 3dp orange left border (#F58220)
+   - Step number badge (24dp orange circle with white number)
    - Instruction text (Body Large)
    - Play button (secondary, right-aligned)
    - Props: stepNumber, instruction, isActive, onPlay
@@ -592,6 +989,14 @@ Create card components per UI_UX.md:
    - For FAQs, tips
    - Expandable (tap to show/hide content)
    - Icon + title + expand arrow
+
+5. lib/shared/widgets/cards/agent_action_card.dart:
+   - Visualizes Agentic Actions (LAM)
+   - "Sathio is working..." style
+   - Animated progress indicator (linear or circular)
+   - Icon representing current action (e.g., touch icon for click, keyboard for typing)
+   - Action description text ("Logging in to portal...")
+   - "Stop" button to interrupt
 
 Export all from lib/shared/widgets/cards/cards.dart
 ```
@@ -672,6 +1077,61 @@ Export all from lib/shared/widgets/navigation/navigation.dart
 Create lib/shared/widgets/widgets.dart that exports all widget categories.
 ```
 
+### Prompt 3.5 — Animation System Setup
+```
+Create Sathio's animation utilities based on UI_UX.md Section 8.
+
+Read UI_UX.md Section 8 first — it has the COMPLETE animation spec.
+
+1. lib/core/animations/page_transitions.dart:
+   - Custom GoRouter page transition builder
+   - Default forward: SharedAxisTransition (vertical) — 300ms, easeOutCubic
+   - Back: reverse — 250ms, easeInCubic
+   - Modal: scale 0.9→1.0 + fade — 250ms, easeOutBack
+   - Root change: FadeTransition — 200ms
+   - Container transform for card→detail (use `animations` package OpenContainer)
+   - ALL transitions respect reduced motion (instant if disabled)
+
+2. lib/core/animations/stagger_helpers.dart:
+   - Extension on List\<Widget\> for staggered list animations using flutter_animate:
+     ```
+     children.staggerIn(interval: 100.ms)
+     // Each child: fadeIn(300ms) + slideY(begin: 0.15, end: 0, duration: 400ms)
+     ```
+   - Home screen greeting typewriter effect
+   - Interest card grid stagger (2-column aware)
+   - Onboarding welcome sequence (exact timing from UI_UX.md 8.2)
+
+3. lib/shared/widgets/animations/card_tap_effect.dart:
+   - Wrap any card with tap animation:
+     - Press: scaleXY → 0.97, 100ms, easeIn
+     - Release: scaleXY → 1.0, 150ms, easeOutBack
+   - Selection animation: orange border fadeIn (200ms) + checkmark scale (300ms, spring)
+   - Chip tap: scale 0.95, orange bg slide-in from left
+
+4. lib/shared/widgets/animations/skeleton_shimmer.dart:
+   - Reusable shimmer placeholder for loading states
+   - Dark mode: gradient #1A1A1A → #2A2A2A → #1A1A1A
+   - Light mode: gradient #E8E8E8 → #F5F5F5 → #E8E8E8
+   - Variants: SkeletonCard, SkeletonText, SkeletonAvatar, SkeletonList
+
+5. lib/shared/widgets/animations/mic_button_animations.dart:
+   - Idle: breathing orange glow (radius 8→16→8, opacity 0.3→0.5, 2s loop)
+   - Tap: scale 1.0→1.15→1.0 + haptic
+   - Listening: 5 orange bars height = audio amplitude (60fps)
+   - Processing: bars collapse → 3 bouncing dots (staggered 150ms)
+   - Error: translateX shake [-8, 8, -6, 6, -3, 0] + red flash
+
+6. lib/core/animations/reduced_motion.dart:
+   - Helper to check MediaQuery.of(context).disableAnimations
+   - Wrapper: AnimateIf(reducedMotion: false, child, animation)
+   - When reduced motion ON: all durations = 0, fades only, no parallax
+
+Add `animations` package to pubspec.yaml (for OpenContainer).
+
+Build and verify animation utilities don't break existing code.
+```
+
 ---
 
 ## 🗣️ PHASE 4: VOICE SERVICES
@@ -736,17 +1196,30 @@ Create speech service layer:
    - Fallback for offline mode
 
 4. lib/services/speech/bhashini_service.dart:
-   - Implementation for Bhashini APIs
+   - Implementation for Bhashini APIs (FREE, 22 languages)
    - ASR endpoint configuration
    - TTS endpoint configuration
+   - Language detection endpoint
    - Handle API errors gracefully
    - Fallback to local TTS if Bhashini fails
 
+4b. lib/services/speech/sarvam_service.dart:
+   - Implementation for Sarvam AI APIs (premium, human-like voice)
+   - Sarvam ASR: more natural speech recognition
+   - Sarvam TTS: human-like, expressive, warm voice
+   - Sarvam-2B: Indian context LLM for understanding Indian queries
+   - Handle API errors gracefully
+   - Fallback to Bhashini if Sarvam fails
+
 5. lib/services/speech/speech_providers.dart:
    - Riverpod providers
-   - Environment-based selection (mock, local, bhashini)
+   - Environment-based selection (mock, local, bhashini, sarvam)
+   - Config flag: USE_SARVAM = false (default to Bhashini — free)
+   - Service abstraction: both implement same interface, swappable
 
-For now, implement local_tts_service fully. Bhashini can be added later.
+IMPORTANT: Build with a VoiceProvider abstraction interface.
+Both BhashiniService and SarvamService implement the same interface.
+This lets us swap between free (Bhashini) and premium (Sarvam) easily.
 ```
 
 ### Prompt 4.3 — Voice Interaction Manager
@@ -759,6 +1232,8 @@ Create the main voice interaction controller:
      - listening - recording audio
      - processing - transcribing + getting response
      - speaking - playing TTS response
+     - executing_action - performing LAM active task
+     - waiting_for_input - slot filling (asking user for data)
      - error - something went wrong
    - Each state can carry relevant data
 
@@ -767,9 +1242,13 @@ Create the main voice interaction controller:
    - Orchestrates the full flow:
      1. startListening() → recording starts
      2. stopListening() → stop recording, start processing
-     3. Process: transcribe audio → send to backend → get response
-     4. speakResponse() → TTS output
-     5. Return to idle
+     3. Process: 
+        a. Detect Language (LanguageManager.autoDetectAndSwitch)
+        b. Transcribe (STT)
+        c. Intent Classification
+     4. IF Intent == Action: Switch to AgentOrchestrator (LAM)
+     5. IF Intent == Query: Get response → speakResponse() → TTS in Current Language
+     6. Return to idle
    
    - Methods:
      - startListening()
@@ -779,6 +1258,7 @@ Create the main voice interaction controller:
      - retry()
    
    - Callbacks/Events:
+     - onLanguageChanged(String newLang) // Notify UI to update
      - onTranscriptionComplete(String text)
      - onResponseReady(BotResponse response)
      - onError(String message)
@@ -791,22 +1271,117 @@ Test with a debug screen that shows all state transitions.
 
 ---
 
+## 🌍 PHASE 4.5: LANGUAGE AUTO-DETECT & OFFLINE LITE MODE
+
+### Prompt 4.5.1 — Language Auto-Detection Service
+```
+Create language auto-detection (Sathio supports ALL Indian languages):
+
+1. lib/services/language/language_detector_service.dart:
+   - Uses Bhashini Language Identification API
+   - Method: Future<DetectedLanguage> detectLanguage(String audioPath)
+   - DetectedLanguage: { code: 'hi', name: 'Hindi', confidence: 0.92 }
+   - Falls back to user's saved preference if confidence < 70%
+   - Handles code-mixing (Hindi+English, Tamil+English)
+
+2. lib/services/language/language_manager.dart:
+   - Manages current active language
+   - Methods:
+     - setLanguage(String langCode)
+     - getLanguage() -> String
+     - autoDetectAndSwitch(String audioPath)
+     - switchByVoiceCommand(String text) -> handles "Tamil mein baat karo"
+   - Saves preference to Hive
+   - Supports per-session override (family sharing same phone)
+   - Notifies all listeners on language change (TTS, UI, responses)
+
+3. lib/services/language/language_providers.dart:
+   - currentLanguageProvider (StateNotifier)
+   - languageDetectorProvider
+
+4. Integration with VoiceInteractionManager:
+   - On every voice input: detect language → if different from current, switch
+   - Show subtle notification: "Hindi mein switch kar diya"
+   - No interruption to flow
+
+5. Supported languages (phased):
+   - Phase 1: hi, bn, ta, mr
+   - Phase 2: te, kn, gu, pa
+   - Phase 3: ml, or, as, ur
+   - Phase 4: All 22 scheduled Indian languages
+```
+
+### Prompt 4.5.2 — Offline Lite Mode
+```
+Create offline functionality for rural India (works without internet):
+
+1. lib/services/offline/offline_content_manager.dart:
+   - Pre-downloads content packs per language
+   - Content types:
+     - FAQs: Top 200 questions per language (JSON)
+     - Scheme info: All major government schemes
+     - Document checklists: What documents needed for each service
+     - Emergency numbers: National + state-wise
+     - Health basics: First aid, vaccination schedules
+     - Step-by-step guides: Text versions of all guided flows
+   - Storage: Hive boxes organized by language
+   - Total size: < 50MB per language
+
+2. lib/services/offline/cached_tts_manager.dart:
+   - Pre-cache TTS audio for common responses
+   - Cache FAQ answers as audio files
+   - Cache emergency info audio
+   - Storage: assets/audio/cached/{lang}/
+   - Playback without internet
+
+3. lib/services/offline/offline_query_handler.dart:
+   - Handles queries when internet is unavailable
+   - Searches local FAQ database (fuzzy matching)
+   - Returns cached text + audio response
+   - Emergency number lookup (always works)
+   - Previously completed task history (from Hive)
+   - Graceful message: "Internet nahi hai. Par basic jaankari de sakta hoon."
+
+4. lib/services/offline/sync_service.dart:
+   - Auto-syncs content when WiFi available
+   - Shows "Last updated" timestamp on cached content
+   - Queues user requests for when internet returns
+   - Downloads new content packs on update
+
+5. lib/services/network/connectivity_service.dart:
+   - Monitors internet connectivity
+   - Switches between online/offline mode automatically
+   - Riverpod provider: connectivityProvider (stream)
+   - No user action needed — seamless degradation
+
+6. Integration:
+   - VoiceInteractionManager checks connectivity before API calls
+   - If offline → route to offline_query_handler
+   - If online → normal flow
+   - Show subtle indicator in UI: "Offline mode" pill
+
+Build and test: turn off internet, verify FAQ responses still work.
+```
+
+---
+
 ## 🏠 PHASE 5: CORE SCREENS
 
-### Prompt 5.1 — Splash Screen
+### Prompt 5.1 — Splash Screen (Luma-Inspired)
 ```
-Create splash screen:
+Create splash screen with dark, premium feel:
 
 1. lib/features/splash/splash_screen.dart:
-   - Off-white background (#F5F5F5)
-   - Centered Sathio logo (use placeholder icon or simple Image)
-   - Size: 120x120dp
-   - "Sathio" text below (H1, Deep Blue)
-   - Tagline "Main hoon na" below (Body, gray)
-   - Subtle loading indicator at very bottom
+   - Background: #0D0D0D (near-black, matches dark theme)
+   - Center: Sathio logo (orange squircle with sparkle star)
+     - Size: 100x100dp
+     - Animation: Fade in (0→1 over 500ms) then scale (0.8→1.0 over 300ms)
+   - Below logo: "Sathio" text (H1, white, Inter Bold) — fades in 200ms after logo
+   - Below text: "Main hoon na" tagline (#A0A0A0, Inter Regular) — fades in 300ms after title
+   - No visible loading indicator (keep it clean)
    
    Logic:
-   - Initialize services (Supabase, Hive)
+   - Initialize services (Supabase, Hive) during animation
    - Check auth state
    - Check onboarding status
    
@@ -815,40 +1390,72 @@ Create splash screen:
    - If onboarded but not authenticated → /auth (or skip if guest mode)
    - If authenticated → /home
    
-   Duration: 2-3 seconds minimum for branding
+   Duration: 2 seconds, then smooth fade-out transition
 
 2. Add to router as initial route ("/")
 ```
 
-### Prompt 5.2 — Home Screen
+### Prompt 5.2 — Home Screen (Luma-Inspired)
 ```
-Create the main home screen:
+Create the main home screen with dark, immersive design (NO bottom tab bar — Luma style):
 
 1. lib/features/home/home_screen.dart:
-   Layout (from top to bottom):
-   - Top bar: LanguagePill (left), Settings icon (right)
-   - Hero section (center):
-     - Sathio avatar/icon (80x80dp)
-     - Greeting: "Namaste [Name]! Batao, kya madad chahiye?"
-     - (Use user's name if available, otherwise just "Namaste!")
-   - Primary CTA: Large MicButton (72x72dp) centered
-   - Label below mic: "Tap karke bolo"
-   - Quick access grid (2x2):
-     - ServiceCard: Government services (📄)
-     - ServiceCard: Bill payments (💡)
-     - ServiceCard: Health info (💊)
-     - ServiceCard: Education (📚)
-   - Bottom: BottomNavBar
+   Layout (dark background #0D0D0D, full-screen immersive):
+   
+   - Top bar (minimal):
+     - Left: Language pill (e.g., "हिंदी" in small chip, #252525 bg, white text)
+       - Tap → Opens Language Selection Dialog (Prompt 2.6)
+     - Right: Settings icon (gear, #A0A0A0) + Profile avatar circle
+   
+   - Greeting section (top area):
+     - Time-based greeting: "Subah ka Namaste, [Name]!" / "Shaam ka Namaste!"
+     - Text: H1, white, Inter Bold
+     - Subtitle: "Kya madad chahiye?" in #A0A0A0
+   
+   - Search/Voice bar (pill-shaped, full width):
+     - Background: #1A1A1A
+     - Border: 1px #2A2A2A
+     - Radius: pill (100px)
+     - Left icon: Search (gray)
+     - Placeholder: "Bolein ya type karein..."
+     - Right icon: Mic (orange #F58220)
+     - Tap anywhere → show ListeningOverlay
+   
+   - Quick Actions (horizontal scrollable chips):
+     - Chips: Aadhaar, Bill Pay, PM-Kisan, Ration Card, Health, Shopping
+     - Chip style: #252525 bg, white text, radius 8px, 36dp height
+     - Active/tapped: Orange bg, white text
+   
+   - Recent Activity (card list):
+     - Section header: "Recent" in H3, white
+     - Cards: #1A1A1A bg, 16px radius, 1px #2A2A2A border
+     - Each card: Icon + title + timestamp + status chip
+     - Empty state: "Abhi koi activity nahi. Bolke shuru karein!"
+   
+   - Floating Mic Button (bottom center, always visible):
+     - Size: 64x64dp, circular
+     - Background: Orange gradient (#F58220 → #F7A94B)
+     - Icon: White mic
+     - Shadow: 0 4px 16px rgba(245,130,32,0.3)
+     - Animation: Subtle breathing pulse (2s loop)
+     - Position: 24dp above safe area bottom
 
 2. lib/features/home/home_provider.dart:
    - User's language preference
    - User's name
-   - Quick access cards data (personalized from onboarding)
-   - Recent/suggested actions
+   - Time-based greeting logic
+   - Quick action chips data (personalized from onboarding)
+   - Recent activity list
 
-3. Tap mic → show ListeningOverlay
-4. Tap service card → navigate to service
-5. Bottom nav works (other screens can be placeholders)
+3. Tap floating mic → show ListeningOverlay
+4. Tap search bar → show ListeningOverlay
+5. Tap language pill → show Language Selection Dialog
+6. Tap quick action chip → navigate to service or start agent
+6. Tap recent activity card → continue or view history
+7. Agentic Trigger:
+   - If VoiceIntent is 'Action' (e.g., "Check PM Kisan status")
+   - HomeProvider triggers AgentOrchestrator.executeTask()
+   - ListeningOverlay closes, AgentOverlay opens
 ```
 
 ### Prompt 5.3 — Listening Overlay
@@ -869,10 +1476,12 @@ Create the listening overlay:
    States:
    - listening: waveform active, mic glowing
    - processing: waveform stops, show loading spinner, text changes to "Samajh raha hoon..."
+   - handing_off: text "Sathio kaam shuru kar raha hai...", fade out -> open AgentOverlay
 
 2. lib/features/voice/voice_overlay_controller.dart:
    - Show/hide logic
    - Connect to VoiceInteractionManager
+   - Listen for 'executing_action' state -> close and trigger AgentOverlay
    
 3. Integration:
    - Tap mic on home → show overlay → start recording
@@ -934,18 +1543,23 @@ Create government services browsing:
 3. lib/features/services/models/service_model.dart:
    - id, title, description, icon, category
    - steps: List<GuideStep>
+   - isAutomated: boolean (Supports LAM/Agentic mode)
 
-4. Service data (hardcoded for MVP):
-   - Aadhaar download
-   - Aadhaar update
-   - PAN card apply
-   - PM-Kisan registration
-   - PM-Kisan status check
-   - Ration card apply
-   - Ayushman Bharat card
-   - State pension check
+4. Service data (hardcoded for MVP — ALL tasks are autonomous via LAM):
+   - Aadhaar download (isAutomated: true) ← Sathio opens UIDAI, fills form, downloads PDF
+   - Aadhaar update (isAutomated: true)
+   - PM-Kisan registration (isAutomated: true)
+   - PM-Kisan status check (isAutomated: true)
+   - PAN card application (isAutomated: true)
+   - Ration card apply (isAutomated: true)
+   - Ayushman Bharat card (isAutomated: true)
+   - State pension check (isAutomated: true)
+   - Electricity bill payment (isAutomated: true) ← Cross-app: browser + UPI
+   - Mobile recharge (isAutomated: true)
 
-5. Tap service → guided mode screen
+5. Tap service → Agent Mode (Sathio does it autonomously)
+   - Show AgentOverlay, Sathio starts executing
+   - Fallback: manual Guided Mode if user prefers
 ```
 
 ### Prompt 6.2 — Guided Mode Screen
@@ -961,12 +1575,17 @@ Create step-by-step guidance:
      - Play button (plays audio instruction)
      - Optional visual (screenshot/illustration)
    - "Open website" button if step has URL
+   - "Open website" button if step has URL
    - Navigation row:
      - "← Pichla" (Previous, secondary)
      - "Aagla →" (Next, primary, prominent)
    - Bottom bar:
      - "Pause karein" button
      - "Insaan se baat karein" button (Talk to Human)
+   - Floating Action Button (if automated):
+     - Label: "Sathio se karwayein" (Do it for me)
+     - Icon: Auto_Awesome
+     - Tap → Trigger AgentOrchestrator
 
 2. lib/features/guided/guided_provider.dart:
    - Service data
@@ -1005,6 +1624,142 @@ Create success celebration:
    - Save completed task to history
 
 2. Navigate here when last step is completed in guided mode
+```
+
+---
+
+## 🤖 PHASE 6.5: AGENTIC AUTOMATION (LAM)
+
+### Prompt 6.5.1 — Native Accessibility Service
+```
+Implement the Android Accessibility Service (Native Kotlin):
+
+1. Create android/app/src/main/java/com/sathio/app/services/SathioAccessibilityService.kt:
+   - Extend AccessibilityService
+   - Override onAccessibilityEvent(event: AccessibilityEvent)
+   - Override onInterrupt()
+   - Implement capabilities:
+     - findNodeByText(text: String): AccessibilityNodeInfo?
+     - clickNode(node: AccessibilityNodeInfo)
+     - setText(node: AccessibilityNodeInfo, text: String)
+     - scroll(direction: Int)
+
+2. Register in AndroidManifest.xml:
+   - Service permission: BIND_ACCESSIBILITY_SERVICE
+   - Intent filter: android.accessibilityservice.AccessibilityService
+   - Meta-data: android.accessibilityservice.accessibility_service_config
+
+3. Create res/xml/accessibility_service_config.xml:
+   - description: "@string/accessibility_service_description"
+   - accessibilityFeedbackType: feedbackGeneric
+   - accessibilityFlags: flagDefault | flagReportViewIds | flagRetrieveInteractiveWindows
+   - canRetrieveWindowContent: true
+   - canPerformGestures: true
+
+4. Add "Accessibility Permission" check in PermissionHandler
+```
+
+### Prompt 6.5.2 — Flutter-Native Bridge
+```
+Create the bridge between Flutter and Native Accessibility:
+
+1. Native Side (MainActivity.kt):
+   - Setup MethodChannel "com.sathio.app/accessibility"
+   - Handle methods provided by Flutter:
+     - "performAction": arguments { type: "click" | "scroll", text: "Submit" }
+     - "readScreen": returns simplified JSON tree of current screen
+     - "isServiceEnabled": returns boolean
+   
+2. Dart Side (lib/services/automation/accessibility_service.dart):
+   - AgentService class
+   - Methods:
+     - Future<bool> isEnabled()
+     - Future<void> clickButton(String text)
+     - Future<void> inputText(String fieldLabel, String value)
+     - Future<String> readScreenContent()
+
+3. Create a debug screen to test:
+   - Button "Check Permission"
+   - Button "Read Current Screen" (prints to console)
+```
+
+### Prompt 6.5.3 — Agent Orchestrator
+```
+Implement the Intelligence Layer (LAM):
+
+API STACK FOR THIS PROMPT:
+- Intent Classification: Gemini 1.5 Flash (fast, cheap)
+- Action Planning: Gemini 1.5 Pro (complex reasoning, task decomposition)
+- Screen Understanding: Gemini 1.5 Pro Vision (reads screenshots, identifies UI elements)
+- Voice I/O: Bhashini ASR/TTS (free) or Sarvam AI (premium)
+- Device Control: Android Accessibility Service (on-device, free)
+- OCR Fallback: Google ML Kit (on-device, free)
+
+1. lib/features/automation/agent_orchestrator.dart:
+   - StateNotifier managing the automation loop
+   - State: Idle, Planning, Executing, WaitingForUser, Success, Failed
+
+2. lib/services/ai/gemini_service.dart:
+   - Initialize Gemini client with API key from env
+   - Methods:
+     - classifyIntent(String userText) → uses Gemini 1.5 Flash
+       - Returns: {intent: "action" | "query", category: "...", confidence: 0.95}
+     - planActions(String goal, String screenContext) → uses Gemini 1.5 Pro
+       - System prompt: "You are Sathio's action planner for Indian phone users..."
+       - Returns: List<ActionStep> (stepType, target, value, description)
+     - readScreen(Uint8List screenshot) → uses Gemini 1.5 Pro Vision
+       - Sends screenshot image to Vision model
+       - Returns: {elements: [...], currentScreen: "...", possibleActions: [...]}
+   - All calls wrapped with dio, retry logic, and timeout (10s)
+   - API key from: .env → GEMINI_API_KEY
+
+3. Logic Flow (executeTask method):
+   - Input: Goal (e.g., "Check PM Kisan Status")
+   - Step 1: classifyIntent(goal) → Gemini Flash confirms it's an "action"
+   - Step 2: planActions(goal) → Gemini Pro returns action steps
+   - Step 3: Open Target App (android_intent_plus / Launch Intent)
+   - Step 4: Loop per step:
+     a. readScreen(screenshot) → Gemini Vision identifies UI elements
+     b. Find target element via Accessibility Service
+     c. Execute action (click, type, scroll)
+     d. Wait for screen change (500ms)
+     e. Verify step completed
+   - Step 5: If Input Field found with no data:
+     - Pause automation (WaitingForUser state)
+     - TTS via Bhashini/Sarvam: "Aadhaar number bataiye?"
+     - Wait for Voice Input → STT via Bhashini/Sarvam
+     - Resume automation with collected data
+   - Step 6: Verify final result, report success/failure via TTS
+
+4. Conversational Slot Filling:
+   - When data missing, trigger VoiceInteractionManager
+   - "Pause Automation" state
+   - Resume after user speaks
+   - All slot-filling uses Bhashini STT/TTS (or Sarvam if configured)
+
+5. Error Handling:
+   - Gemini API failure → retry 2x → show error to user
+   - Accessibility node not found → readScreen again → try alternative
+   - Timeout (30s per step) → abort and explain
+```
+
+### Prompt 6.5.4 — Action Overlay
+```
+Create the "Sathio is Working" Overlay:
+
+1. lib/features/automation/widgets/agent_overlay.dart:
+   - Small floating pill (System Alert Window)
+   - Logo animation (Working...)
+   - Text: "PM Kisan check kar raha hoon..."
+   - "Stop" button (Red X) to kill task immediately
+
+2. Permissions:
+   - ACTION_MANAGE_OVERLAY_PERMISSION
+
+3. Integration:
+   - Show when executeTask starts
+   - Update text at each step ("Clicking Login...", "Filling Aadhaar...")
+   - Hide on completion
 ```
 
 ---
@@ -1163,6 +1918,7 @@ Provide SQL migrations for these tables:
    - category (text)
    - icon (text)
    - is_active (boolean)
+   - is_automated (boolean, default false) -- LAM support
    - priority (int)
    - created_at (timestamp)
 
@@ -1335,6 +2091,12 @@ Add polish animations using flutter_animate:
    - Idle: gentle pulse every 2s (scale 1.0 → 1.05 → 1.0)
    - Listening: glow effect + faster pulse
    - Processing: rotation animation
+   - Agent Active: continuous ripple effect (Sathio working)
+
+3. Agent Overlay (LAM):
+   - Pulse animation on the "Working" pill
+   - Text fade in/out during step changes
+   - Progress bar smooth transition
 
 3. Cards:
    - Enter animation: fade + slide up with stagger
@@ -1564,48 +2326,412 @@ The [feature] isn't working. Please:
 
 ## 🔧 QUICK FIX PROMPTS
 
-### Fix Build Errors
+> Copy-paste these when something breaks. Each is self-contained and actionable.
+
+---
+
+### 🏗️ Build & Compile
+
+#### Fix Build Errors
 ```
 The Flutter build is failing. Please:
-1. Run flutter analyze and show all errors
+1. Run `flutter analyze` and show all errors
 2. Fix each error one by one
-3. Run flutter build apk and verify it works
+3. Run `flutter build apk --debug` and verify it works
 4. Show me what was fixed
 ```
 
-### Fix State Management
+#### Fix Dependency Conflicts
 ```
-The [screen/feature] state isn't updating correctly. Please:
-1. Review the Riverpod provider
-2. Check the state transitions
-3. Add debug logging if needed
-4. Fix the issue and explain the fix
-```
-
-### Test a Complete Flow
-```
-Test the complete [feature] flow:
-1. Start from [starting point]
-2. Go through each step
-3. Verify each screen renders correctly
-4. Check state updates properly
-5. Report any issues found and fix them
+I'm getting dependency version conflicts in pubspec.yaml. Please:
+1. Run `flutter pub outdated` to check versions
+2. Resolve any conflicting dependencies
+3. Run `flutter pub get` and verify
+4. If needed, add dependency_overrides in pubspec.yaml
+5. Verify `flutter build apk --debug` succeeds
 ```
 
-### Add Missing Feature
+#### Fix Gradle Build Issues
 ```
-We're missing [feature] from the PRD. Please:
-1. Review FINAL_PRD.md for the requirement
-2. Check UI_UX.md for the design
-3. Implement it following our existing patterns
-4. Add appropriate tests
+Android Gradle build is failing. Please:
+1. Check android/build.gradle and android/app/build.gradle for version issues
+2. Ensure compileSdkVersion, minSdkVersion, targetSdkVersion are correct (21/34/34)
+3. Check kotlin version and gradle plugin version compatibility
+4. Run `cd android && ./gradlew clean` then `flutter build apk --debug`
+5. Show me what was fixed
 ```
 
 ---
 
-**Total Prompts:** ~40 prompts across 11 phases  
+### 🎨 UI & Theme
+
+#### Fix Dark Mode Not Applying
+```
+The dark mode theme isn't applying correctly. Please:
+1. Check lib/core/theme/colors.dart — verify dark theme colors (#0D0D0D bg, #1A1A1A surface, #F58220 orange)
+2. Verify ThemeData.dark() is properly configured in app.dart
+3. Check if widgets are using Theme.of(context) colors instead of hardcoded values
+4. Test both dark and light modes render correctly
+5. Ensure onboarding screens use LIGHT theme (per UI_UX.md Section 7)
+```
+
+#### Fix Text Overflow
+```
+Text is overflowing on [screen]. Please:
+1. Wrap Text widgets in Flexible or Expanded where needed
+2. Add maxLines and overflow: TextOverflow.ellipsis for long text
+3. Check Hindi/Bengali text (20-30% longer than English — account for expansion)
+4. Test with system font scaled to 200%
+5. Ensure all text uses Inter font from our typography.dart
+```
+
+#### Fix Layout on Small Screens
+```
+The layout breaks on small screen devices. Please:
+1. Check for hardcoded pixel sizes — replace with MediaQuery responsive values
+2. Wrap column content in SingleChildScrollView where needed
+3. Ensure touch targets are minimum 48x48dp
+4. Test on 320dp wide screen (smallest Android)
+5. Check safe area padding (notch, bottom bar)
+```
+
+#### Fix Bottom Sheet Not Showing
+```
+The bottom sheet (auth/options) isn't showing or looks wrong. Please:
+1. Verify showModalBottomSheet is using correct parameters
+2. Check: shape (24px top radius), backgroundColor (#FFFFFF), isScrollControlled: true
+3. Ensure handle bar, close button, and content are properly laid out
+4. Test spring animation (400ms, bouncy) per UI_UX.md
+5. Check if background gets blurred/dimmed when sheet is open
+```
+
+---
+
+### 🗣️ Voice & API
+
+#### Fix Voice Not Recording
+```
+Mic recording isn't working. Please:
+1. Check permission_handler — is MICROPHONE permission requested and granted?
+2. Verify record package initialization in audio_recorder_service.dart
+3. Check if isRecording state updates in the provider
+4. Test on real device (emulator mic is unreliable)
+5. Add try-catch and log errors from the record plugin
+```
+
+#### Fix Speech-to-Text (Bhashini/Sarvam)
+```
+Speech-to-text transcription is failing. Please:
+1. Check bhashini_service.dart / sarvam_service.dart for correct API endpoint URLs
+2. Verify API keys are loaded from .env (BHASHINI_API_KEY / SARVAM_API_KEY)
+3. Check audio file format — Bhashini expects WAV 16kHz, Sarvam expects specific format
+4. Test with Hindi audio first (most reliable)
+5. Verify the VoiceProvider abstraction correctly routes to selected backend
+6. Add fallback: if Bhashini fails → try local speech_to_text (on-device)
+```
+
+#### Fix TTS Not Speaking
+```
+Text-to-speech isn't working. Please:
+1. For Bhashini TTS: Check API endpoint, language code, and audio response format
+2. For flutter_tts (offline): Verify language is set (`tts.setLanguage('hi-IN')`) and engine is available
+3. Check if audio_player_service is playing the returned audio correctly
+4. Verify TTS state transitions (idle → speaking → completed)
+5. Test with a simple "Namaste" in Hindi first
+```
+
+#### Fix Gemini API Errors
+```
+Gemini API calls are failing. Please:
+1. Check GEMINI_API_KEY in .env — is it valid and not expired?
+2. Verify the model name: gemini-1.5-flash (fast) or gemini-1.5-pro (complex)
+3. Check request format — content, system instruction, safety settings
+4. Add proper error handling: 429 (rate limit), 403 (key invalid), 500 (server)
+5. For Vision API: ensure screenshot is base64 encoded and under 4MB
+6. Add retry logic with exponential backoff (3 attempts)
+```
+
+#### Fix Language Detection
+```
+Auto language detection isn't working. Please:
+1. Check bhashini_service.dart → language ID endpoint
+2. Verify audio is being sent in correct format
+3. Check if the result maps correctly to our language codes ('hi', 'bn', 'ta', etc.)
+4. Fallback: use user's preferred language from Hive settings
+5. Test with clear Hindi speech first, then try Bengali/Tamil
+```
+
+---
+
+### 🧭 Navigation & State
+
+#### Fix State Management
+```
+The [screen/feature] state isn't updating correctly. Please:
+1. Review the Riverpod provider (AsyncNotifier, StateNotifier, or AutoDispose?)
+2. Check the state transitions — are they in correct order?
+3. Verify ref.watch() vs ref.read() usage (watch for UI, read for actions)
+4. Add debug logging: print('State changed: $state') in notifier
+5. Check if provider is being disposed too early (AutoDispose)
+6. Fix the issue and explain the root cause
+```
+
+#### Fix Navigation Not Working
+```
+Navigation between screens is broken. Please:
+1. Check go_router configuration in lib/core/router/
+2. Verify route paths match what's being pushed
+3. Check auth guards — is the user being redirected to login unexpectedly?
+4. For onboarding: verify onboarding_complete check in router
+5. Test the full flow: splash → onboarding → auth → home
+6. Check for stack overflow from duplicate pushes
+```
+
+#### Fix Data Not Persisting
+```
+User data isn't being saved between sessions. Please:
+1. Check Hive initialization in main.dart
+2. Verify Hive boxes are opened before use (Box<dynamic> is dangerous — use typed boxes)
+3. For Supabase: check if insert/update calls have proper error handling
+4. Verify auth token is cached for offline session restoration
+5. Test: set data → kill app → reopen → check if data survived
+```
+
+---
+
+### 🤖 LAM / Agentic
+
+#### Fix Accessibility Service Not Working
+```
+The Accessibility Service isn't controlling the phone. Please:
+1. Check AndroidManifest.xml — is service registered with correct permissions?
+2. Verify accessibility_service_config.xml has correct flags
+3. Check if user has enabled the service in Settings → Accessibility
+4. Test isServiceEnabled() before attempting any actions
+5. Debug: Log accessibility events in onAccessibilityEvent
+6. Verify MethodChannel bridge between Kotlin and Dart is connected
+```
+
+#### Fix Agent Overlay Not Showing
+```
+The "Sathio is working" overlay isn't displaying. Please:
+1. Check ACTION_MANAGE_OVERLAY_PERMISSION — is it granted?
+2. Verify System Alert Window permission request
+3. Check overlay widget rendering on top of other apps
+4. Test Stop button functionality
+5. Verify overlay updates text at each step
+```
+
+#### Fix LAM Task Failing Mid-Way
+```
+The agent stops during task execution. Please:
+1. Check which step it fails at — add step logging
+2. If screen reading fails: verify Gemini Vision API call with screenshot
+3. If element not found: try alternative selectors (text, content-description, view-id)
+4. If timeout: increase step timeout from 10s to 15s
+5. If slot filling fails: check VoiceInteractionManager pause/resume flow
+6. Add graceful error recovery — skip failed step and try next
+```
+
+---
+
+### 📱 Performance & Offline
+
+#### Fix App Lag / Slow Performance
+```
+The app is laggy, especially on low-end phones. Please:
+1. Run `flutter run --profile` and check for jank
+2. Look for unnecessary rebuilds — use Consumer instead of ref.watch at top level
+3. Check for heavy computation on main thread — move to isolates
+4. Optimize images: use cached_network_image, compress assets
+5. Check ListView builders — use ListView.builder not ListView with children
+6. Target: 60fps on 2GB RAM devices
+```
+
+#### Fix Offline Mode Not Working
+```
+The app crashes or shows errors when offline. Please:
+1. Check connectivity_plus for network status detection
+2. Verify Hive cache has fallback data (FAQs, emergency numbers)
+3. Ensure flutter_tts works offline (test in airplane mode)
+4. Check if Supabase calls have try-catch with offline fallback
+5. Show friendly "No internet" banner — not error screens
+6. Queue failed API calls for retry when connection returns
+```
+
+---
+
+### ♿ Accessibility & Localization
+
+#### Fix Touch Targets Too Small
+```
+Some buttons/icons are hard to tap. Please:
+1. Audit all interactive elements — minimum 48x48dp tap area
+2. Use InkWell/GestureDetector with minimum Size(48, 48)
+3. Check icon buttons — wrap with padding if needed
+4. Verify on a real device with finger tapping
+5. Pay special attention to: OTP boxes, chips, back arrows, close buttons
+```
+
+#### Fix Language Strings
+```
+Some text is showing in English instead of user's language. Please:
+1. Check if all user-facing strings go through our localization system
+2. Verify the [language] key exists in our string maps
+3. Check for hardcoded English strings — replace with localized versions
+4. Test: switch language to Hindi → all UI should update
+5. Check text expansion — Hindi is 20-30% longer than English
+```
+
+---
+
+### 🧪 Testing
+
+#### Test a Complete Flow
+```
+Test the complete [feature] flow:
+1. Start from [starting point]
+2. Go through each step
+3. Verify each screen renders correctly (check dark/light mode)
+4. Check state updates properly (add debug prints)
+5. Test error cases (no internet, invalid input, permission denied)
+6. Report any issues found and fix them
+```
+
+#### Run Full Smoke Test
+```
+Run a complete smoke test of the app:
+1. Fresh install → Splash screen shows → Welcome screen loads
+2. Onboarding: Get Started → Auth → Phone/OTP → Language → Profile → Home
+3. Home: Greeting shows → Mic button works → Chips scroll
+4. Voice: Tap mic → records → transcribes → response plays
+5. Services: Browse service cards → tap → detail screen loads
+6. Profile: View profile → edit name → save → persists
+7. Offline: Enable airplane mode → app still shows cached content
+8. Report all failures and fix critical ones immediately
+```
+
+#### Add Missing Feature
+```
+We're missing [feature] from the PRD. Please:
+1. Review FINAL_PRD.md for the requirement
+2. Check UI_UX.md for the design specifications
+3. Look at IMPLEMENTATION_PLAN.md for technical guidance
+4. Check the API table in PROMPT.md → "When to Use Each API" section for which APIs to use
+5. Implement it following our existing patterns (Riverpod, Go Router, theme)
+6. Add appropriate error handling
+```
+
+---
+
+**Total Prompts:** ~55 prompts across 11 phases + 20+ quick fixes  
 **Estimated Time:** 15-20 hours of focused vibe coding  
 **Result:** Production-ready Sathio MVP
+
+---
+
+**Happy Vibe Coding! 🚀**
+
+---
+
+## ⚙️ PHASE 12: USER SETTINGS & ENGAGEMENT
+
+### Prompt 12.1 — Profile & Settings Screen
+```
+Create the profile and settings screen:
+
+1. lib/features/profile/profile_screen.dart:
+   - Design: Clean, Luma-style (White/Silver background)
+   - TopAppBar: "Profile & Settings" (no back button if on bottom nav)
+   
+   - Profile Header (Card):
+     - Avatar (large, 80dp) with edit badge
+     - Name (H2, Bold)
+     - Phone number (Body, Gray)
+     - "Edit Profile" button (Outlined pill)
+   
+   - Settings Sections (Grouped lists):
+     
+     Group 1: "App Experience"
+     - Language Row:
+       - Icon: Globe
+       - Label: "App Language"
+       - Value: Current Language (e.g., "Hindi")
+       - Action: Tap -> Open Language Selection Dialog (Prompt 2.6)
+     
+     - Voice Settings Row:
+       - Icon: Mic
+       - Label: "Voice Settings"
+       - Action: Tap -> Expand or open details
+         - Speed Slider (0.75x - 1.25x)
+         - Toggle: "Auto-detect Language" (Switch)
+         - Toggle: "Read Responses Automatically" (Switch)
+     
+     Group 2: "Account"
+     - "Your Interests" (Tap -> Open Interest Selection Prompt 2.8)
+     - "Saved Documents" (DigiLocker integration placeholder)
+     - "Sign Out" (Red text)
+     
+     Group 3: "Support"
+     - "Help & FAQ" (Tap -> Open Help Screen Prompt 7.3)
+     - "Privacy Policy"
+     - "App Version" (v1.0.0)
+
+2. lib/features/profile/profile_provider.dart:
+   - User profile data (from Hive/Supabase)
+   - Settings state (language, voice speed, flags)
+   - Methods: updateProfile, updateSetting, logout
+   
+   - On Language Change:
+     - Update 'currentLanguage' provider
+     - Persist to Hive
+     - Trigger app-wide rebuild (or at least reload strings)
+     - Show confirmation toast: "Language changed to [Lang]"
+
+3. Connect to Home Screen "Profile" icon/avatar tap.
+```
+
+### Prompt 12.2 — Notification System
+```
+Create robust notification architecture:
+
+1. lib/services/notifications/notification_service.dart:
+   - Singleton or Riverpod provider
+   - Dependencies: firebase_messaging, flutter_local_notifications
+   
+   - setup():
+     - Request permissions (sound, alert, badge)
+     - Get FCM token (print for debug)
+     - Initialize local notifications (channel settings)
+     - Handle background/terminated state messages
+     - Handle foreground messages (show local notification)
+   
+   - showLocalNotification(RemoteMessage message):
+     - Display title, body
+     - Payload functionality for deep linking
+   
+2. lib/features/notifications/notification_screen.dart:
+   - TopAppBar: "Notifications" / "Suchnaein"
+   - List of notifications (persisted in Hive or fetched from Supabase)
+   - Grouped by: Today, Yesterday, Earlier
+   - Notification Item:
+     - Icon (based on type: Update, Alert, Tip)
+     - Title & Body
+     - Time ago
+     - Tap -> Action (e.g., open scheme details)
+   - Empty state: "Koi nayi suchna nahi hai"
+   - "Mark all as read" action
+
+3. lib/services/notifications/notification_provider.dart:
+   - Manages list of notifications
+   - Unread count
+   - Methods: markAsRead, delete, clearAll
+
+4. Integration:
+   - Call setup() in main.dart
+   - Listen for token refresh -> update Supabase 'users' table
+   - Handle 'click_action' payload for routing
+```
 
 ---
 

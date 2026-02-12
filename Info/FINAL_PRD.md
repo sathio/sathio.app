@@ -1,7 +1,7 @@
 # SATHIO — MASTER PRODUCT REQUIREMENTS DOCUMENT
 
-**Version:** 2.0 (Consolidated Final)  
-**Date:** February 8, 2026  
+**Version:** 3.0 (LAM Architecture)  
+**Date:** February 12, 2026  
 **Status:** Founder-Ready | Developer-Ready | Investor-Ready  
 **Prepared By:** Council of Experts (Product, Technology, Design, Strategy)
 
@@ -13,7 +13,26 @@
 **Tagline:** "Main hoon na" (I'm here for you) | "Bharat ki Awaaz" (Voice of India)
 
 **One-Line Definition:**  
-*A calm, voice-first vernacular assistant that helps non-English Indians complete essential digital tasks without confusion or fear.*
+*A voice-first AI agent that takes control of your phone to complete any digital task — in your language, like a human helper sitting next to you.*
+
+**Product Category:** Large Action Model (LAM) — AI that doesn't just talk, it acts.
+
+**What Sathio IS:**
+
+> Sathio = **Vernacular AI + Device Control + Task Automation (LAM) + Human-like Guidance**
+> 
+> It is ChatGPT + Alexa + Auto Form Filler + Phone Operator + Digital Cybercafe Assistant + Local Language Human Guide — all in one app.
+> 
+> Sathio doesn't just respond. **It executes actions on device.** It interacts with apps, reads screens, fills fields, clicks buttons, and handles entire workflows.
+>
+> | It doesn't just... | It actually... |
+> |---------------------|----------------|
+> | Answer questions | **Acts on the answer** — opens the site, fills the form, downloads the result |
+> | Guide the user | **Does it for the user** — while explaining each step in their language |
+> | Understand language | **Controls the phone** — taps, types, scrolls, navigates across apps |
+> | Provide information | **Completes the task** — books tickets, pays bills, shops, researches |
+>
+> **Sathio is not just a language assistant. It is a Voice-First Local Action Model (LAM) for Bharat.**
 
 **Core Philosophy:**  
 > "Talking is always free. We charge for outcomes, not conversation."
@@ -39,6 +58,7 @@ Eliminate language as a barrier to India's digital economy. Make every essential
 
 ### Mission
 Enable every Indian to access digital services without English literacy through a trusted, voice-first vernacular interface.
+Replace the need for cyber cafes, middlemen, and digital literacy by giving every Indian an AI agent that controls their phone autonomously — filling forms, making payments, downloading documents, and completing any digital task through simple voice commands in their mother tongue.
 
 ### Long-Term Goals (3-5 Years)
 - Become the default digital assistant for 100M+ rural and semi-urban Indians
@@ -81,7 +101,9 @@ A significant portion of India's population (estimated 200-300M people) is digit
 | **Existing Vernacular Apps** | Fragmented, limited voice, poor dialect support | Users juggle multiple apps, still face barriers |
 
 ### The Market Gap
-No single solution combines: **deep vernacular support + government/financial integration + voice-first UX + human fallback + affordable pricing**
+No single solution combines: **deep vernacular support + autonomous device control + real-time task execution + human fallback + affordable pricing**
+
+> **Sathio's Breakthrough:** While others give information, Sathio takes action. The user says "Aadhaar download karo" and Sathio opens the browser, navigates to UIDAI, fills the form, enters the OTP, and saves the PDF — all while narrating each step in the user's language.
 
 ---
 
@@ -192,92 +214,138 @@ No single solution combines: **deep vernacular support + government/financial in
 
 ## 4. USER JOURNEYS & USE CASES
 
-### Journey 1: First-Time User — PM-Kisan Application
+### Journey 1: Autonomous Aadhaar Download (LAM in Action)
 
-**Scenario:** Ramesh downloads Sathio to apply for PM-Kisan subsidy
-
-**Steps:**
-1. **Discovery:** Hears about Sathio from panchayat leader; receives SMS with download link
-2. **Onboarding (3 minutes):**
-   - App opens: "Namaste! Main Sathio hoon. Batao, kya madad chahiye?"
-   - Language selection (visual flags + voice preview)
-   - Quick tutorial: "Tap karke bolo"
-3. **First Query (5 minutes):**
-   - User: "PM-Kisan kaise apply karte hain?"
-   - Sathio: "Samajh gaya. Step by step batata hoon."
-   - Guided steps with eligibility check, document checklist
-   - Opens PM-Kisan website with voice instructions
-4. **Return (Day 7):** Comes back to check status
-5. **Advocacy (Week 4):** Shares with 2-3 other farmers
-
-**Success Metrics:**
-- First task completed in <5 minutes
-- Voice recognition >85% accuracy
-- 7-day return rate: 40%
-
-### Journey 2: Premium Human Escalation
-
-**Scenario:** Sharma Ji confused about Ayushman Bharat eligibility
+**Scenario:** Ramesh wants to download his Aadhaar card
 
 **Steps:**
-1. Basic query: "Ayushman Bharat mein naam kaise check kare?"
-2. Sathio provides basic steps
-3. User confused: "Mera naam list mein nahi aa raha"
-4. Sathio: "Iska exact jawab mere paas nahi hai. Par main aapko expert se baat karwa sakta hoon. ₹50 mein 10 minute. Karoge?"
-5. User agrees via voice: "Haan"
-6. UPI payment → Expert connection → Issue resolved
-7. Follow-up: "Aapki problem solve ho gayi?"
+1. User: "Mera Aadhaar download karna hai"
+2. Sathio: "Theek hai! Aapka Aadhaar number batao"
+3. User: "1234 5678 9012"
+4. Sathio: "Samajh gaya. Ab main UIDAI website khol raha hoon..."
+   → **Sathio opens Chrome via Accessibility Service**
+   → **Navigates to uidai.gov.in/myaadhaar**
+   → **Reads the screen using Vision AI**
+   → **Clicks "Download Aadhaar" button**
+5. Sathio: "Aadhaar number daal raha hoon..."
+   → **Types Aadhaar number into the form**
+   → **Selects OTP option**
+   → **Clicks "Send OTP"**
+6. Sathio: "Aapke phone pe OTP aaya hoga. Bol do ya main khud padh loon?"
+   → **Reads OTP from SMS notification (with permission)**
+   → **Enters OTP automatically**
+7. Sathio: "Captcha solve kar raha hoon... Download ho raha hai..."
+   → **Solves captcha, clicks download**
+   → **Saves PDF to Downloads folder**
+8. Sathio: "Ho gaya! Aapka Aadhaar download ho gaya. Downloads mein save hai. Dikhaaun?"
 
-**Success Metrics:**
-- Expert conversion: 5%
-- Payment completion: 70%
-- Satisfaction: >80%
+**Total Time:** ~3 minutes (vs 2 hours + ₹200 at cyber cafe)
 
-### Journey 3: Daily Bill Payment
+### Journey 2: PM-Kisan Form Filling (Slot Filling + Execution)
 
-**Scenario:** Priya needs to pay electricity bill
-
-**Steps:**
-1. Opens Sathio: "Bijli bill pay karna hai"
-2. Sathio: "Kaunsi state mein ho?"
-3. After confirming Maharashtra: "MAHAVITRAN website kholte hain"
-4. Highlights payment button, offers UPI options
-5. Completes payment in 3 minutes
-6. Confirmation saved to WhatsApp
-
-### Journey 4: Financial Lead Generation
-
-**Scenario:** Farmer needs tractor loan
+**Scenario:** Ramesh wants to apply for PM-Kisan subsidy
 
 **Steps:**
-1. User: "Mujhe tractor loan chahiye"
-2. NLP identifies high-intent financial query
-3. Sathio asks qualifying questions (land ownership, location)
-4. Presents "Apply Here" button for partner bank
-5. Data sent as qualified lead for commission
+1. User: "PM-Kisan ke liye apply karna hai"
+2. Sathio: "Bilkul! Pehle kuch details chahiye. Aapka poora naam batao."
+3. User: "Ramesh Kumar"
+4. Sathio: "State?"
+5. User: "Uttar Pradesh"
+6. Sathio: "District?"
+7. User: "Sultanpur"
+8. Sathio: "Aadhaar number?"
+9. User: "1234 5678 9012"
+10. Sathio: "Bank account number aur IFSC code batao"
+11. User: (provides details)
+12. Sathio: "Sab details mil gayi. Ab form bhar raha hoon..."
+   → **Opens PM-Kisan portal**
+   → **Navigates to registration page**
+   → **Fills each field with collected data**
+   → **Narrates each action: "Naam daal raha hoon... State select kar raha hoon..."**
+13. Sathio: "Form tayyar hai. Ek baar dekhlo — sab sahi hai? Haan bolo toh submit kar doon."
+14. User: "Haan, kar do"
+15. Sathio: **Clicks submit** → "Ho gaya! Application number hai PM-KISAN-2026-XXXXX. Screenshot le liya hai."
 
-### Journey 5: Multi-Language Code-Switching
+### Journey 3: Electricity Bill Payment (Cross-App Automation)
 
-**Scenario:** Ananya speaks Tamil but mixes English
+**Scenario:** Priya wants to pay electricity bill
 
 **Steps:**
-1. "Competitive exam ka fee payment kaise karte hain?"
-2. Sathio auto-detects: "Tamil ya English mein explain karoon?"
-3. User chooses Tamil
-4. Full guidance in pure Tamil
+1. User: "Bijli ka bill pay karna hai"
+2. Sathio: "Consumer number batao ya bill pe se padh loon?"
+3. User: "Bill dikhata hoon" → shows paper bill to camera
+4. Sathio: → **Uses camera OCR to read consumer number, amount**
+   "Samajh gaya — Consumer number 12345, amount ₹1,850. Pay kar doon?"
+5. User: "Haan"
+6. Sathio: → **Opens Google Pay/PhonePe via deep link**
+   → **Fills bill payment details**
+   → "UPI PIN daalo" (Sathio pauses at payment screen)
+7. User enters UPI PIN
+8. Sathio: "Payment ho gaya! ₹1,850 paid. Receipt save kar di."
+
+### Journey 4: Train Ticket Booking (Complex Multi-Step)
+
+**Scenario:** Abdul wants to book a train ticket
+
+**Steps:**
+1. User: "Mumbai se Kolkata ka train ticket book karna hai"
+2. Sathio: "Kis date ko jaana hai?"
+3. User: "15 March ko"
+4. Sathio: "Kitne log?"
+5. User: "Ek — mera"
+6. Sathio: → **Opens IRCTC website/app**
+   → **Searches Mumbai → Kolkata, 15 March**
+   → "3 trains mil rahe hain. Rajdhani ₹2,100, Duronto ₹1,800, Gitanjali ₹900. Kaun sa?"
+7. User: "Gitanjali"
+8. Sathio: → **Selects train, fills passenger details from profile**
+   → "Sleeper class mein seat available hai. Book karoon?"
+9. User: "Haan"
+10. Sathio: → **Completes booking, pauses at payment**
+    → "Payment screen aa gayi. ₹900 pay karo."
+11. User pays → Sathio: "Ticket book ho gayi! PNR number save kar diya."
+
+### Journey 5: Online Shopping (Voice Commerce)
+
+**Scenario:** Lakshmi wants to buy supplies for her shop
+
+**Steps:**
+1. User: "Mujhe 10 kg basmati chawal chahiye, sasta wala"
+2. Sathio: → **Opens Amazon/JioMart**
+   → **Searches "basmati rice 10kg"**
+   → **Reads prices from screen**
+   → "3 options hain: India Gate ₹950, Daawat ₹870, Fortune ₹780. Kaunsa loge?"
+3. User: "Fortune"
+4. Sathio: → **Adds to cart**
+   → "Cart mein daal diya. Address confirm karo — [saved address]. Yahi pe deliver ho?"
+5. User: "Haan"
+6. Sathio: → **Proceeds to checkout, pauses at payment**
+
+### Journey 6: WhatsApp Messages & Communication
+
+**Scenario:** Sharma Ji wants to send Holi greetings
+
+**Steps:**
+1. User: "Mere sabhi contacts ko Holi ki shubhkamnayein bhejo WhatsApp pe"
+2. Sathio: "Kya likhu message mein?"
+3. User: "Holi ki hardik shubhkamnayein. Rang barse!"
+4. Sathio: → **Opens WhatsApp**
+   → **Sends message to each contact (or broadcast)**
+   → "25 logo ko message bhej diya. Aur kuch?"
 
 ### Use Case Priority Matrix
 
-| Use Case | Segment | Frequency | Value | Priority | Revenue |
-|----------|---------|-----------|-------|----------|---------|
-| Aadhaar download/update | All | High | ₹200+ saved | P0 (MVP) | ₹5/task |
-| PM-Kisan application | Farmers | Medium | ₹6K/year benefit | P0 (MVP) | ₹10/task |
-| PAN card application | All | Low (one-time) | High | P0 (MVP) | ₹10/task |
-| Electricity bill | All | Monthly | Medium | P0 (MVP) | ₹3/task |
-| Bank loan inquiry | Business | Medium | Very High | P1 (MVP+) | ₹100-500/lead |
-| Mobile recharge | All | Weekly | Low | P1 (MVP+) | ₹1/task |
-| Health scheme info | Elderly, rural | Medium | High | P0 (MVP) | Free |
-| Pension status | Elderly | Monthly | High | P1 (MVP+) | ₹5/task |
+| Use Case | Action Type | Frequency | Value | Priority |
+|----------|-------------|-----------|-------|----------|
+| Aadhaar download | Form fill + Download | High | ₹200+ saved | P0 (MVP) |
+| PM-Kisan application | Form fill + Submit | Medium | ₹6K/year | P0 (MVP) |
+| Bill payment | Cross-app automation | Monthly | Medium | P0 (MVP) |
+| PAN card application | Form fill | One-time | High | P0 (MVP) |
+| Mobile recharge | App automation | Weekly | Low | P0 (MVP) |
+| Train/bus booking | Multi-step automation | Occasional | High | P1 |
+| Online shopping | Search + Cart | Occasional | Medium | P1 |
+| WhatsApp messaging | App control | Frequent | Low | P1 |
+| Job application | Form fill | Occasional | Very High | P1 |
+| Bank account opening | Multi-app + KYC | One-time | Very High | P2 |
 
 ---
 
@@ -295,27 +363,49 @@ No single solution combines: **deep vernacular support + government/financial in
   - Code-mixing support (Hindi+English, Tamil+English)
   - Text fallback with transliteration support
 - **Technical:**
-  - STT: Bhashini API (primary), Whisper fine-tuned (backup)
-  - TTS: Bhashini TTS (neutral gender, warm tone)
+  - STT: Bhashini ASR (free, 22 languages) | Sarvam AI ASR (human-like, paid) — decision pending
+  - TTS: Bhashini TTS (free) | Sarvam AI TTS (natural, expressive, human-like) — decision pending
+  - Language Detection: Bhashini Language ID API (auto-detect on every voice input)
+  - AI Brain: Gemini 1.5 Flash (intent classification) + Gemini 1.5 Pro (action planning + screen reading)
+  - Indian Context: Sarvam-2B LLM (understands Indian schemes, culture natively)
+  - Vision: Gemini 1.5 Pro Vision (reads phone screens for LAM)
+  - OCR: Google ML Kit (on-device, offline, free)
+  - Offline TTS: flutter_tts (on-device fallback)
   - Latency: <2 seconds STT, <3 seconds total response
 - **User Value:** No typing required; removes literacy barrier
 
-#### Feature M2: Language Support (4 Major Languages)
-- **MVP Languages:**
+#### Feature M2: All Indian Languages + Auto-Detect
+- **Vision:** Sathio supports ALL languages used in India — not just 4.
+- **MVP Languages (Phase 0-1):**
   1. Hindi (550M speakers) — Priority 1
   2. Bengali (265M speakers) — Priority 2
   3. Tamil (80M speakers) — Priority 3
   4. Marathi (90M speakers) — Priority 4
+- **Phase 2 Languages:**
+  5. Telugu (83M) | 6. Kannada (45M) | 7. Gujarati (55M) | 8. Punjabi (33M)
+- **Phase 3 Languages:**
+  9. Malayalam (38M) | 10. Odia (35M) | 11. Assamese (15M) | 12. Urdu (51M)
+- **Phase 4 (Full Coverage — All 22 Scheduled Languages):**
+  - Kashmiri, Sindhi, Konkani, Dogri, Maithili, Santali, Bodo, Manipuri, Nepali, Sanskrit
+- **Auto-Detect (Core Feature):**
+  - User speaks → Sathio auto-detects language in real-time
+  - No need to manually select language first
+  - Powered by Bhashini language identification API
+  - Falls back to user's saved preference if detection confidence < 70%
+  - Handles code-mixing: "Mera Aadhaar download karna hai" (Hindi+English)
+- **Manual Language Switch:**
+  - Quick switch pill always visible on home screen
+  - Language selector in settings
+  - Voice command: "Tamil mein baat karo" → switches immediately
 - **Dialect Coverage:**
-  - Hindi covers Bhojpuri, Maithili (70%+ intelligibility)
-  - Bengali: Kolkata standard (works for Bangladesh expansion)
+  - Hindi covers Bhojpuri, Maithili, Rajasthani (70%+ intelligibility)
+  - Bengali: Kolkata standard
   - Tamil: Chennai standard
   - Marathi: Pune standard
-- **Capabilities:**
-  - Language selection on first launch (visual flags + native script)
-  - Voice preview: "Main Hindi mein baat kar sakta hoon"
-  - Persistent preference stored
-  - Easy language switch in settings
+- **Language Memory:**
+  - Remembers user's preferred language
+  - Remembers per-session language if switched mid-conversation
+  - Different family members can use different languages on same device
 
 #### Feature M3: Intent-Based Query Understanding
 - **Scope:** Recognize high-frequency user intents
@@ -329,62 +419,122 @@ No single solution combines: **deep vernacular support + government/financial in
 - **Accuracy Target:** ≥90% intent classification
 - **Fallback:** "Thoda aur detail mein bataoge?" if unclear
 
-#### Feature M4: Step-by-Step Guided Mode
-- **Description:** Sequential, voice-narrated guidance with visual support
-- **UI Components:**
-  - Progress indicator: "Step 2 of 5"
-  - Voice narration for each step
-  - Visual display: text + icons
-  - Navigation: "Next" (large, bottom-right), "Repeat" (secondary), "Pause"
-  - Visual highlighting: current step emphasized
+#### Feature M4: Autonomous Task Execution Engine (LAM Core)
+- **Description:** Sathio acts as an autonomous agent that controls the user's phone to complete tasks — just like a human helper sitting next to them.
+- **Mechanism:** Android Accessibility Service + Vision-Language Model (VLM)
+- **How It Works:**
+  1. User gives voice command ("Aadhaar download karo")
+  2. Sathio plans action sequence (open browser → navigate → fill form → download)
+  3. Sathio executes each action while narrating in user's language
+  4. Sathio pauses for user input when needed (OTP, UPI PIN, confirmation)
+  5. Sathio confirms completion and saves results
+- **UI During Execution:**
+  - Floating overlay showing: current action, progress, pause/stop buttons
+  - Green dot indicator: "Sathio kaam kar raha hai"
+  - Voice narration of each step: "Ab main form bhar raha hoon..."
 - **Capabilities:**
-  - Pause/resume: exit and return later
-  - Voice pacing: adjustable speed (0.75x, 1x, 1.25x)
-  - Error recovery: detects if user goes off-track
-  - Completion confirmation: "Task complete! Badhai ho!"
+  - Open and navigate any app or website
+  - Read screen content (Vision AI)
+  - Type text into any field
+  - Tap buttons, select dropdowns, scroll
+  - Switch between apps
+  - Read SMS/notifications (OTPs)
+  - Download and save files
+  - Take screenshots for records
+  - Handle CAPTCHAs (basic ones)
+- **Slot Filling (Conversational Data Collection):**
+  - When Sathio needs user info for a form, it asks conversationally:
+    - "Aapka poora naam batao" → fills name field
+    - "Date of birth?" → fills DOB field
+    - "Aadhaar ke last 4 digit?" → fills Aadhaar field
+  - Stores user profile data (with consent) to avoid re-asking
+  - Sensitive data (Aadhaar, PAN) asked fresh each time or stored encrypted
+- **Safety Controls:**
+  - **Confirm Before Critical Actions:** Payment, form submission, delete
+  - **Real-time Overlay:** User always sees what Sathio is doing
+  - **Instant Kill Switch:** Say "Ruko" or tap stop button
+  - **Action Blacklist:** Cannot change phone settings, uninstall apps, access banking PINs
+  - **Transaction Limit:** ₹5,000 per action without extra confirmation
 
-#### Feature M5: Government Services Assistance
-- **Supported Services (MVP):**
-  1. **Aadhaar:** Download, status check, update, bank linking
-  2. **PAN Card:** Application, status, Aadhaar linking
-  3. **PM-Kisan:** Eligibility, application, status, payment info
-  4. **Pension Schemes:** EPF, senior citizen, widow/disability
-  5. **Ration Card:** Application, document requirements, state-specific
-- **Capabilities:**
-  - Step-by-step guidance in all 4 languages
-  - Document checklist for each service
-  - Opens official government websites in in-app browser
-  - Clear disclaimer: "Main sirf madad kar raha hoon. Final check aap karein."
-- **Constraints (MVP):**
-  - NO auto-form filling (security/legal — Phase 3)
-  - NO auto-submission (user must review)
+#### Feature M5: Government Services Automation (Domain 1 — Highest Trust Builder)
+- **Supported Services (MVP — Sathio DOES the task, not just guides):**
+  1. **Aadhaar:**
+     - Download e-Aadhaar PDF → Opens UIDAI, fills form, enters OTP, saves PDF
+     - Check enrollment status
+     - Update address/mobile
+     - Link Aadhaar to bank account
+  2. **PAN Card:**
+     - Fill NSDL/UTIITSL application form end-to-end
+     - Submit with document upload
+     - Track application status
+     - Aadhaar-PAN linking
+  3. **PM-Kisan:**
+     - Fill registration form (slot-filling all farmer details)
+     - Check eligibility by state/district
+     - Track payment status
+     - Check beneficiary list
+  4. **Ration Card:**
+     - Fill state-specific application form
+     - Document checklist generation
+     - Track application status
+  5. **Pension Schemes:**
+     - EPF balance check
+     - Senior citizen pension status
+     - Download pension slip
+- **Document Checklist:** For each service, Sathio tells user what documents are needed before starting
+- **How It Differs from Guidance:**
+  - Old: "Ab yahan click karo" → user clicks
+  - New: Sathio clicks, types, navigates — user just watches and confirms
+- **Pre-built Task Flows:** Each service has a pre-mapped action sequence for reliability
+- **Adaptive Handling:** If website layout changes, Vision AI adapts to find the right elements
 
-#### Feature M6: Utility & Bill Payment Guidance
-- **Supported Utilities:**
-  1. **Electricity:** State-wise board guidance, payment options
-  2. **Mobile Recharge:** Operator-specific steps (Jio, Airtel, VI, BSNL)
-  3. **Gas Booking:** LPG cylinder, subsidy info
-  4. **Water Bills:** Municipal guidance (city-specific)
-- **Approach:**
-  - Redirect to existing payment apps (Google Pay, PhonePe, Paytm)
-  - UPI deep-linking
-  - No in-app payment processing (Phase 2)
+#### Feature M6: Utility & Bill Payment Automation (Domain 2 — Daily Use)
+- **Supported Actions (ALL with autonomous device control):**
+  1. **Electricity Bill:**
+     - Opens state electricity board website/app
+     - Enters consumer number (asks user or reads from camera OCR)
+     - Shows bill amount
+     - Redirects to UPI app (Google Pay/PhonePe) for payment
+     - Saves payment receipt automatically
+  2. **Mobile Recharge:**
+     - Opens Jio/Airtel/VI/BSNL app
+     - Selects plan based on user's request ("Sasta wala data pack")
+     - Compares plans and recommends
+     - Initiates payment via UPI
+  3. **Gas Booking:**
+     - Opens MyHP/Indane/Bharat Gas app/website
+     - Books cylinder with one voice command
+     - Tracks delivery status
+  4. **Water Bills:**
+     - Opens municipal corporation website
+     - Fills consumer details
+     - Pays via UPI redirect
+- **Cross-App Automation:**
+  - Sathio switches between browser and UPI app seamlessly
+  - Reads bill details from camera (OCR) or user's voice
+  - Pauses at UPI PIN screen (NEVER accesses PIN — user enters it)
+  - Saves payment receipts automatically
+  - Confirms: "Payment ho gayi! Receipt save kar di."
 
-#### Feature M7: Basic Health & Education Information
-- **Health (MVP):**
-  - Ayushman Bharat (PMJAY): Eligibility, card download, hospital locator
-  - Government hospitals: Location search, contact numbers
-  - Emergency helplines: 108, 102
-  - Preventive health: Vaccination schedules, hygiene tips
-- **Education (MVP):**
-  - Scholarships: Central and state schemes
-  - Skill training: PMKVY, ITI/Polytechnic
-  - Adult literacy: Local programs
-- **Safety Measures:**
-  - NO medical diagnosis: "Main doctor nahi hoon. Bimari ke liye doctor se milein."
-  - NO prescription advice
+#### Feature M7: Health & Education Information (Domain 3)
+- **Health:**
+  - **Schemes:** Ayushman Bharat (PMJAY) eligibility, card download, hospital locator
+  - **Government Hospitals:** Location search by district, contact numbers, OPD timings
+  - **Emergency Helplines:** 108, 102, poison control, mental health helpline
+  - **Preventive Health:** Vaccination schedules, hygiene tips, pregnancy care basics
+  - **Form Filling:** Sathio can fill Ayushman Bharat application form autonomously
+- **Education:**
+  - **Scholarships:** Central and state government schemes, eligibility checker
+  - **Skill Training:** PMKVY, ITI/Polytechnic course finder
+  - **Exam Info:** Registration dates, form filling (autonomously)
+  - **Adult Literacy:** Local programs and enrollment
+- **⚠️ Safety Measures (CRITICAL):**
+  - **NO medical diagnosis:** "Main doctor nahi hoon. Bimari ke liye doctor se milein."
+  - **NO prescription advice** — never recommends medicines
+  - **NO treatment plans** — only provides info + directions to hospitals
   - Emergency escalation with doctor/hospital contact
   - Verified information only (WHO, MoHFW, state health departments)
+  - Disclaimer shown before every health response
 
 #### Feature M8: AI Personality & Voice Design
 - **Personality Traits:**
@@ -441,28 +591,75 @@ No single solution combines: **deep vernacular support + government/financial in
 - **User Controls:**
   - Enable/disable by category
   - Choose preferred language
+ 
+#### Feature M11: Universal Phone Control (LAM — "Sathio Can Do Anything")
+- **Description:** Sathio is not limited to pre-defined tasks. It can perform ANY action a normal user does on their phone — just by voice command.
+- **Core Philosophy:** If a human can do it on a phone, Sathio can do it too.
+- **Universal Capabilities:**
+  - **Form Filling:** Any form on any website or app (job applications, bank forms, exam registrations)
+  - **Research:** Browse web, read articles, summarize in native language ("Cotton ke liye best fertilizer batao")
+  - **Shopping:** Search products across Amazon/Flipkart/JioMart, compare prices, add to cart
+  - **Communication:** Send WhatsApp messages, make calls, draft emails
+  - **Booking:** Train tickets (IRCTC), bus (RedBus), flights, hotels
+  - **Downloads:** Any document, certificate, receipt from any website
+  - **Banking guidance:** Navigate banking apps (does NOT access credentials)
+  - **Entertainment:** Play YouTube videos, search songs, open apps
+  - **Information:** Weather, news, mandi prices, exam results
+- **How Sathio Replaces a Cyber Cafe:**
+
+  | Cyber Cafe Task | How Sathio Does It | Cost Saved |
+  |-----------------|--------------------|-----------|
+  | Aadhaar download | Autonomous execution | ₹200+ |
+  | Form filling | Voice slot-filling + auto-fill | ₹150+ |
+  | Ticket booking | Multi-app automation | ₹100+ |
+  | Document printing | Download + share to nearest print shop | ₹50+ |
+  | General browsing | Voice-commanded research | ₹100+ |
+
+- **Technical Foundation:**
+  - Android Accessibility Service for device control
+  - Vision-Language Model for screen understanding
+  - Action Planning Agent for multi-step task decomposition
+  - Slot-filling dialogue manager for missing information
+  - Pre-mapped task flows for common tasks + dynamic VLM for unknown tasks
 
 ---
 
 ### 5.2 Advanced Features (P1 — High Priority, MVP+)
 
-#### Feature A1: Language Auto-Detection & Switching
-- Automatically detect language from speech
+#### Feature A1: Language Auto-Detection & Switching → **PROMOTED TO MVP (see Feature M2)**
+- Now part of core Feature M2 — auto-detect on every voice input
 - Seamless mid-conversation switching
 - Confidence threshold: >70% for auto-switch
-- Manual override available
+- Manual override always available
+- Voice command: "Tamil mein baat karo" → instant switch
 
-#### Feature A2: Offline Lite Mode
-- **Content Package:**
-  - Top 50 FAQs per language
-  - Emergency numbers (police, ambulance, helplines)
-  - Basic scheme information
-  - Document checklists
-- **Technical:**
-  - Package size: <50 MB
-  - SQLite database
-  - Pre-cached TTS audio files
-  - Auto-sync on WiFi
+#### Feature A2: Offline Lite Mode → **PROMOTED TO MVP (Feature M12)**
+- **Description:** Pre-downloaded content pack that works without internet — huge win for rural India
+- **Pre-Downloaded Content:**
+  - Common FAQs (top 200 questions per language)
+  - Government scheme information (all major schemes)
+  - Document checklists for all services
+  - Emergency numbers (national + state-wise)
+  - Basic health info (first aid, vaccination schedules)
+  - Step-by-step guides (text + cached TTS audio)
+- **Offline Capabilities:**
+  - Text responses from cached FAQ database
+  - TTS playback from pre-cached audio files
+  - Emergency helpline dialing
+  - Previously completed task history viewing
+  - Language switching (all languages cached)
+- **What Requires Internet:**
+  - Live voice transcription (STT)
+  - LAM task execution (device control needs VLM API)
+  - Real-time form filling
+  - Payment processing
+  - Live status checks (PM-Kisan status, etc.)
+- **Package Size:** < 50MB per language pack
+- **Auto-Update:** Syncs when internet available (WiFi preferred)
+- **User Experience:**
+  - Graceful degradation: "Internet nahi hai. Par basic jaankari de sakta hoon."
+  - Shows cached content with "Last updated" timestamp
+  - Queues requests for when internet returns
 
 #### Feature A3: "Talk to Human" Escalation
 - **Expert Pool:**
@@ -637,13 +834,15 @@ No single solution combines: **deep vernacular support + government/financial in
 
 ## 6. FUNCTIONAL REQUIREMENTS
 
-### 6.1 Voice Input & Output
+### 6.1 Voice Input, Output & Accessibility
 
 | Requirement | Specification |
 |-------------|---------------|
 | Voice Recording | Single tap activation, max 60 seconds, animated waveform feedback |
 | Speech-to-Text | <2 seconds, ≥85% accuracy, code-mixing support, noise cancellation |
 | Text-to-Speech | User's selected language, neutral-warm tone, medium-slow speed |
+| Active Action | Android Accessibility Service overlay for inter-app automation |
+| Permissions | Accessibility Service, Overlay Permission, Microphone |
 | Voice Confirmation | Verbal confirmation ("Samajh gaya"), critical action confirmation |
 | Adjustable Speed | 0.75x, 1x, 1.25x in settings |
 
