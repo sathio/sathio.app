@@ -15,7 +15,7 @@ Before we start building, please thoroughly analyze these documentation files in
 1. Read FINAL_PRD.md - Complete product requirements, features, LAM architecture, monetization, user personas
 2. Read IMPLEMENTATION_PLAN.md - Technical architecture, LAM engine design, tech stack, development phases
 3. Read PROJECT_CONTEXT.md - Brand philosophy, voice design, team values
-4. Read UI_UX.md - Design system, colors, typography, components, screens
+4. Read OLD_UI_UX.md and UI_UX.md - Design system, colors, typography, components, screens
 5. Read PRD1, PRD2, PRD3, PRD4, PRD5 and FINAL_PRD
 
 After reading all files, confirm you understand:
