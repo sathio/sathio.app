@@ -11,6 +11,7 @@ class OnboardingState {
   final String? selectedDistrict;
   final List<String> selectedInterests;
   final bool isCompleted;
+  final bool isGuest;
 
   const OnboardingState({
     this.currentIndex = 0,
@@ -21,6 +22,7 @@ class OnboardingState {
     this.selectedDistrict,
     this.selectedInterests = const [],
     this.isCompleted = false,
+    this.isGuest = false,
   });
 
   OnboardingState copyWith({
@@ -32,6 +34,7 @@ class OnboardingState {
     String? selectedDistrict,
     List<String>? selectedInterests,
     bool? isCompleted,
+    bool? isGuest,
   }) {
     return OnboardingState(
       currentIndex: currentIndex ?? this.currentIndex,
@@ -42,17 +45,20 @@ class OnboardingState {
       selectedDistrict: selectedDistrict ?? this.selectedDistrict,
       selectedInterests: selectedInterests ?? this.selectedInterests,
       isCompleted: isCompleted ?? this.isCompleted,
+      isGuest: isGuest ?? this.isGuest,
     );
   }
 }
 
 // --- Notifier ---
-class OnboardingNotifier extends StateNotifier<OnboardingState> {
-  OnboardingNotifier() : super(const OnboardingState()) {
-    _loadProgress();
-  }
-
+class OnboardingNotifier extends Notifier<OnboardingState> {
   static const _boxName = 'onboarding_box';
+
+  @override
+  OnboardingState build() {
+    _loadProgress();
+    return const OnboardingState();
+  }
 
   Future<void> _loadProgress() async {
     final box = await Hive.openBox(_boxName);
@@ -62,15 +68,13 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     final pState = box.get('state');
     final district = box.get('district');
 
-    if (mounted) {
-      state = state.copyWith(
-        isCompleted: completed,
-        avatarIndex: avatar,
-        name: name,
-        selectedState: pState,
-        selectedDistrict: district,
-      );
-    }
+    state = state.copyWith(
+      isCompleted: completed,
+      avatarIndex: avatar,
+      name: name,
+      selectedState: pState,
+      selectedDistrict: district,
+    );
   }
 
   void nextPage() {
@@ -89,6 +93,10 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
 
   void selectLanguage(String language) {
     state = state.copyWith(selectedLanguage: language);
+  }
+
+  void setGuest(bool isGuest) {
+    state = state.copyWith(isGuest: isGuest);
   }
 
   void updateProfile({
@@ -110,10 +118,12 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     final box = await Hive.openBox(_boxName);
     if (state.avatarIndex != 1) await box.put('avatarIndex', state.avatarIndex);
     if (state.name != null) await box.put('name', state.name);
-    if (state.selectedState != null)
+    if (state.selectedState != null) {
       await box.put('state', state.selectedState);
-    if (state.selectedDistrict != null)
+    }
+    if (state.selectedDistrict != null) {
       await box.put('district', state.selectedDistrict);
+    }
   }
 
   void toggleInterest(String interest) {
@@ -142,6 +152,6 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
 
 // --- Provider ---
 final onboardingProvider =
-    StateNotifierProvider<OnboardingNotifier, OnboardingState>((ref) {
-      return OnboardingNotifier();
-    });
+    NotifierProvider<OnboardingNotifier, OnboardingState>(
+      OnboardingNotifier.new,
+    );

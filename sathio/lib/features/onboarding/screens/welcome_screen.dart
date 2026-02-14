@@ -23,6 +23,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     with AutomaticKeepAliveClientMixin {
   late VideoPlayerController _controller;
   bool _isControllerOwner = false;
+  bool _hasError = false;
 
   @override
   bool get wantKeepAlive => true; // Keep screen alive to preserve video state/buffer
@@ -35,13 +36,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       _controller = widget.videoController!;
       _isControllerOwner = false;
     } else {
-      _controller = VideoPlayerController.asset(
-        'assets/images/onboarding.webm',
-      );
+      _controller = VideoPlayerController.asset('assets/images/onboarding.mp4');
       _isControllerOwner = true;
     }
 
+    // Listen for initialization state changes to trigger rebuild
+    _controller.addListener(_onControllerUpdate);
     _configureController();
+  }
+
+  void _onControllerUpdate() {
+    if (mounted) {
+      // Rebuild when video state changes (initialized, errors, etc.)
+      setState(() {});
+    }
   }
 
   @override
@@ -59,25 +67,36 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
 
   void _configureController() {
-    // Mute audio to allow autoplay on web/iOS
     _controller.setVolume(0);
     _controller.setLooping(true);
 
     if (_controller.value.isInitialized) {
+      // Already initialized (pre-loaded from SplashScreen)
       if (widget.shouldPlay) _controller.play();
     } else {
-      _controller.initialize().then((_) {
-        // Ensure the first frame is shown after the video is initialized
-        if (mounted) {
-          setState(() {});
-          if (widget.shouldPlay) _controller.play();
-        }
-      });
+      // Initialize now
+      _controller
+          .initialize()
+          .then((_) {
+            if (mounted) {
+              setState(() {});
+              if (widget.shouldPlay) _controller.play();
+            }
+          })
+          .catchError((e) {
+            debugPrint('Video initialization failed: $e');
+            if (mounted) {
+              setState(() {
+                _hasError = true;
+              });
+            }
+          });
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onControllerUpdate);
     if (_isControllerOwner) {
       _controller.dispose();
     } else {
@@ -118,14 +137,57 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   ),
                 ),
               )
-            else
+            else if (!_hasError)
               const Center(child: CircularProgressIndicator()),
+            // If _hasError, the underlying gradient container shows through
+
+            // --- Subtle Pastel Gradient Overlay (Luma-inspired) ---
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(-0.8, -0.6),
+                    radius: 1.8,
+                    colors: [
+                      const Color(
+                        0xFFE8DEFF,
+                      ).withValues(alpha: 0.18), // Lavender
+                      const Color(
+                        0xFFD6EEFF,
+                      ).withValues(alpha: 0.12), // Light blue
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.3, 0.7],
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0.9, 0.7),
+                    radius: 1.4,
+                    colors: [
+                      const Color(
+                        0xFFFFE8D6,
+                      ).withValues(alpha: 0.16), // Warm peach
+                      const Color(
+                        0xFFFFF0E8,
+                      ).withValues(alpha: 0.10), // Soft cream
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.35, 0.7],
+                  ),
+                ),
+              ),
+            ),
 
             // --- Bottom Content (Text + Button) ---
             Positioned(
               left: 0,
               right: 0,
-              bottom: MediaQuery.of(context).size.height * 0.08,
+              bottom: 0,
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -135,29 +197,23 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Logo Text
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'sathio',
-                            style: GoogleFonts.inter(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+                      // Logo Image
+                      const SizedBox(height: 12),
+                      Image.asset(
+                        'assets/images/sathio.png',
+                        height: 80,
+                        color: Colors.grey,
+                        colorBlendMode: BlendMode.srcIn,
                       ).animate().fadeIn(duration: 600.ms),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 1),
 
                       // Headline
                       Text(
                             'Your Digital Companion',
                             style: GoogleFonts.poppins(
                               fontSize: 28,
-                              fontWeight: FontWeight.w400,
+                              fontWeight: FontWeight.w700,
                               color: const Color(0xFF111111),
                               height: 1.2,
                             ),
@@ -167,7 +223,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           .fadeIn(duration: 600.ms)
                           .slideY(begin: 0.2, end: 0),
 
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 2),
 
                       // Subheadline with Gradient
                       ShaderMask(
@@ -180,10 +236,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               end: Alignment.bottomRight,
                             ).createShader(bounds),
                             child: Text(
-                              'Start Your Journey Here',
+                              'Start Here',
                               style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w400,
+                                fontSize: 34,
+                                fontWeight: FontWeight.w600,
                                 color: Colors.white, // Required for ShaderMask
                                 height: 1.2,
                               ),
@@ -194,7 +250,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           .fadeIn(duration: 600.ms)
                           .slideY(begin: 0.2, end: 0),
 
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 24),
 
                       // Get Started Button
                       SizedBox(

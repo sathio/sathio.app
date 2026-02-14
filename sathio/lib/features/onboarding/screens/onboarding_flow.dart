@@ -29,6 +29,7 @@ class OnboardingFlow extends ConsumerStatefulWidget {
 
 class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   final PageController _pageController = PageController();
+  final GlobalKey<State<PhoneInputScreen>> _phoneInputKey = GlobalKey();
 
   @override
   void dispose() {
@@ -46,16 +47,12 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   }
 
   void _back() {
+    // Always unfocus keyboard when going back
+    FocusScope.of(context).unfocus();
+
     final currentIndex = ref.read(onboardingProvider).currentIndex;
     if (currentIndex > 0) {
       int prevIndex = currentIndex - 1;
-
-      // Custom Logic: Back from Language (2) -> Welcome (0)
-      // Per user request, we skip showing Phone Input on back navigation from Language screen.
-      if (currentIndex == 2) {
-        prevIndex = 0;
-      }
-
       ref.read(onboardingProvider.notifier).setPage(prevIndex);
       _pageController.animateToPage(
         prevIndex,
@@ -69,7 +66,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(onboardingProvider);
+    final onboardingState = ref.watch(onboardingProvider);
 
     // Listen to Auth State for auto-advance
     ref.listen(authProvider, (previous, next) {
@@ -77,7 +74,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
           (previous?.status != AuthStatus.authenticated)) {
         // If user logs in (e.g. via OTP or Google), move to Language step (Index 2)
         // Flow: 0=Welcome, 1=Phone, 2=Language
-        if (state.currentIndex < 2) {
+        if (onboardingState.currentIndex < 2) {
           ref.read(onboardingProvider.notifier).setPage(2);
         }
       }
@@ -97,108 +94,149 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
       }
     });
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar:
-          (state.currentIndex > 0 &&
-              state.currentIndex != 3) // Hide for Profile (3) as it has its own
-          ? AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: _back,
-              ),
-              actions: [
-                // Skip logic for specific steps (e.g. Profile, Interests)
-                if ([2, 3, 4].contains(state.currentIndex))
-                  TextButton(
-                    onPressed: _next,
-                    child: Text(
-                      'Skip',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey,
+    return PopScope(
+      canPop: onboardingState.currentIndex == 0,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _back();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: (onboardingState.currentIndex > 0)
+            ? AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: _back,
+                ),
+                actions: [
+                  // Skip logic for specific steps (e.g. Profile, Interests)
+                  if ([2, 3, 4].contains(onboardingState.currentIndex))
+                    TextButton(
+                      onPressed: _next,
+                      child: Text(
+                        'Skip',
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
+                ],
+              )
+            : null, // No AppBar on Welcome Screen
+        body: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(), // Disable swipe
+          children: [
+            // 0. Welcome - Opens Auth Sheet
+            WelcomeScreen(
+              videoController: widget.videoController,
+              shouldPlay: onboardingState.currentIndex == 0,
+              onGetStarted: () async {
+                // Track which action was taken inside the sheet
+                String? action;
+                await showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (_) => AuthBottomSheet(
+                    onPhoneTap: () {
+                      action = 'phone';
+                      Navigator.pop(context); // Close sheet
+                    },
+                    onGoogleTap: () {
+                      action = 'google';
+                      Navigator.pop(context); // Close sheet
+                    },
+                    onGuestTap: () {
+                      action = 'guest';
+                      Navigator.pop(context); // Close sheet
+                    },
                   ),
-              ],
-            )
-          : null, // No AppBar on Welcome Screen
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(), // Disable swipe
-        children: [
-          // 0. Welcome - Opens Auth Sheet
-          WelcomeScreen(
-            videoController: widget.videoController,
-            shouldPlay: state.currentIndex == 0,
-            onGetStarted: () async {
-              await showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (_) => AuthBottomSheet(
-                  onPhoneTap: () {
-                    Navigator.pop(context); // Close sheet
-                    _pageController.animateToPage(
-                      1, // Phone Input
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                    );
-                    ref.read(onboardingProvider.notifier).setPage(1);
-                  },
-                  onGoogleTap: () {
-                    Navigator.pop(context); // Close sheet
-                    ref.read(authServiceProvider).signInWithGoogle();
-                    // Listener will handle navigation on success
-                  },
-                  onGuestTap: () {
-                    Navigator.pop(context); // Close sheet
-                    // "Continue as Guest" behaves like "Skip" -> Go to Language (Index 2)
-                    _pageController.animateToPage(
-                      2, // Language Selection
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                    );
-                    ref.read(onboardingProvider.notifier).setPage(2);
-                  },
-                ),
-              );
-            },
-          ),
+                );
 
-          // 1. Phone Input
-          PhoneInputScreen(onSkip: _next),
+                // Sheet is now fully closed — dismiss any rogue focus first
+                if (mounted) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                }
 
-          // 2. Language Selection
-          LanguageSelectionScreen(onContinue: _next),
+                // Now perform the action
+                if (action == 'phone') {
+                  ref.read(onboardingProvider.notifier).setGuest(false);
+                  _pageController.animateToPage(
+                    1, // Phone Input
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut,
+                  );
+                  ref.read(onboardingProvider.notifier).setPage(1);
+                  // Request focus after page animation starts
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final state = _phoneInputKey.currentState;
+                    if (state != null) {
+                      (state as dynamic).requestFocus();
+                    }
+                  });
+                } else if (action == 'google') {
+                  ref.read(authServiceProvider).signInWithGoogle();
+                } else if (action == 'guest') {
+                  // Set guest mode
+                  ref.read(onboardingProvider.notifier).setGuest(true);
 
-          // 3. Profile Setup
-          // 3. Profile Setup
-          ProfileSetupScreen(onContinue: _next, onBack: _back),
+                  // Force close keyboard
+                  FocusScope.of(context).unfocus();
 
-          // 4. Interest Selection
-          _PlaceholderStep(title: 'Step 5: Interests', onNext: _next),
+                  // Small delay to ensure state update propagates
+                  Future.delayed(const Duration(milliseconds: 50), () {
+                    if (mounted) {
+                      // Navigate to Language (Index 1 in Guest Mode)
+                      _pageController.animateToPage(
+                        1,
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                      ref.read(onboardingProvider.notifier).setPage(1);
+                    }
+                  });
+                }
+                // action == null means user dismissed via X or swipe — stay on Welcome
+              },
+            ),
 
-          // 5. Voice Demo
-          _PlaceholderStep(title: 'Step 6: Voice Demo', onNext: _next),
+            // 1. Phone Input (Only if NOT guest)
+            if (!onboardingState.isGuest)
+              PhoneInputScreen(key: _phoneInputKey, onSkip: _next),
 
-          // 6. Permissions
-          _PlaceholderStep(title: 'Step 7: Permissions', onNext: _next),
+            // 2. Language Selection
+            LanguageSelectionScreen(onContinue: _next),
 
-          // 7. Home (Navigates out of flow)
-          _PlaceholderStep(
-            title: 'Step 8: All Set!',
-            onNext: () {
-              ref.read(onboardingProvider.notifier).completeOnboarding();
-              // Navigate to Home replacing Route
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const HomeScreen()),
-              );
-            },
-            buttonText: 'Go Home',
-          ),
-        ],
+            // 3. Profile Setup
+            // 3. Profile Setup
+            ProfileSetupScreen(onContinue: _next, onBack: _back),
+
+            // 4. Interest Selection
+            _PlaceholderStep(title: 'Step 5: Interests', onNext: _next),
+
+            // 5. Voice Demo
+            _PlaceholderStep(title: 'Step 6: Voice Demo', onNext: _next),
+
+            // 6. Permissions
+            _PlaceholderStep(title: 'Step 7: Permissions', onNext: _next),
+
+            // 7. Home (Navigates out of flow)
+            _PlaceholderStep(
+              title: 'Step 8: All Set!',
+              onNext: () {
+                ref.read(onboardingProvider.notifier).completeOnboarding();
+                // Navigate to Home replacing Route
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                );
+              },
+              buttonText: 'Go Home',
+            ),
+          ],
+        ),
       ),
     );
   }

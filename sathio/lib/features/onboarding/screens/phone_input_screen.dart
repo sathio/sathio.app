@@ -15,10 +15,20 @@ class PhoneInputScreen extends StatefulWidget {
 class _PhoneInputScreenState extends State<PhoneInputScreen>
     with AutomaticKeepAliveClientMixin {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   bool _isValid = false;
 
   @override
   bool get wantKeepAlive => true; // Keep screen alive
+
+  /// Call this from the parent to open the keyboard when navigating to this screen.
+  void requestFocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_focusNode.hasFocus) {
+        _focusNode.requestFocus();
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -30,6 +40,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
   void dispose() {
     _controller.removeListener(_validateInput);
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -52,6 +63,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
   }
 
   void _onSkip() {
+    FocusScope.of(context).unfocus(); // Close keyboard
     if (widget.onSkip != null) {
       widget.onSkip!();
     }
@@ -143,7 +155,8 @@ class _PhoneInputScreenState extends State<PhoneInputScreen>
                         Expanded(
                           child: TextField(
                             controller: _controller,
-                            autofocus: true,
+                            focusNode: _focusNode,
+                            autofocus: false,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,

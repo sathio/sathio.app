@@ -82,20 +82,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
 
     return Scaffold(
       backgroundColor: Colors.white, // Clean white background like reference
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            if (widget.onBack != null) {
-              widget.onBack!();
-            } else {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -176,9 +162,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedState,
+                  initialValue: _selectedState,
+                  isExpanded: true,
                   items: IndiaData.indiaStatesDistricts.keys.map((state) {
-                    return DropdownMenuItem(value: state, child: Text(state));
+                    return DropdownMenuItem(
+                      value: state,
+                      child: Text(state, overflow: TextOverflow.ellipsis),
+                    );
                   }).toList(),
                   onChanged: (val) {
                     setState(() {
@@ -223,11 +213,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedDistrict,
+                    initialValue: _selectedDistrict,
+                    isExpanded: true,
                     items: districts.map((district) {
                       return DropdownMenuItem(
                         value: district,
-                        child: Text(district),
+                        child: Text(district, overflow: TextOverflow.ellipsis),
                       );
                     }).toList(),
                     onChanged: (val) {
@@ -291,7 +282,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
                     disabledBackgroundColor: const Color(0xFF999999),
                     disabledForegroundColor: const Color(
                       0xFFFFFFFF,
-                    ).withOpacity(0.5),
+                    ).withValues(alpha: 0.5),
                     elevation: 0,
                     shape: const StadiumBorder(),
                   ),

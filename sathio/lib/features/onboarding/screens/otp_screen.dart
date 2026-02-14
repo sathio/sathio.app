@@ -54,7 +54,7 @@ class _OtpScreenState extends State<OtpScreen> {
   void _onResend() {
     if (_resendTimer == 0) {
       // Logic to resend OTP
-      print("Resend OTP to ${widget.phoneNumber}");
+      debugPrint("Resend OTP to ${widget.phoneNumber}");
       _startTimer();
     }
   }
@@ -74,7 +74,7 @@ class _OtpScreenState extends State<OtpScreen> {
         _isLoading = false;
       });
       // Handle success (Navigation to next step)
-      print("OTP Verified: ${_pinController.text}");
+      debugPrint("OTP Verified: ${_pinController.text}");
     }
   }
 

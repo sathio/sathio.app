@@ -9,21 +9,23 @@ final authServiceProvider = Provider<AuthService>((ref) {
 });
 
 // State Provider
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return AuthNotifier(authService);
-});
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthService _authService;
-
-  AuthNotifier(this._authService) : super(const AuthState()) {
-    _init();
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    final authService = ref.watch(authServiceProvider);
+    _init(authService);
+    return const AuthState();
   }
 
-  void _init() {
+  AuthService get _authService => ref.read(authServiceProvider);
+
+  void _init(AuthService authService) {
     // Listen to stream of auth changes from Supabase
-    _authService.authStateChanges.listen((authState) {
+    authService.authStateChanges.listen((authState) {
       state = authState;
     });
   }

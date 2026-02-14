@@ -26,7 +26,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _handleNavigation() async {
     // Start video initialization early
     _videoController = VideoPlayerController.asset(
-      'assets/images/onboarding.webm',
+      'assets/images/onboarding.mp4',
     );
     final videoInitFuture = _videoController!.initialize().catchError((e) {
       debugPrint("Video initialization failed: $e");
@@ -56,10 +56,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     // Using PageRouteBuilder for a custom fade transition
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => isAuthenticated
+        pageBuilder: (_, _, _) => isAuthenticated
             ? const HomeScreen()
             : OnboardingFlow(videoController: _videoController),
-        transitionsBuilder: (_, animation, __, child) {
+        transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 800),
