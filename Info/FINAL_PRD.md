@@ -1197,13 +1197,21 @@ External Integrations
 
 ### Permissions Required
 
-| Permission | Required/Optional | Purpose |
-|------------|-------------------|---------|
-| Microphone | Required | Voice input |
-| Storage | Required | Offline cache |
-| Location | Optional | Hyper-local scheme suggestions |
-| Phone State | Optional (Suggested) | Read UPI SMS for verification |
-| Notifications | Optional | Engagement alerts |
+| Permission | Android Manifest | Required/Optional | Purpose | When to Request |
+|------------|-----------------|-------------------|---------|-----------------|
+| Internet | `INTERNET` | Required | API calls (Bhashini, Gemini, Supabase) | Auto-granted |
+| Network State | `ACCESS_NETWORK_STATE` | Required | Detect offline mode | Auto-granted |
+| Vibrate | `VIBRATE` | Required | Haptic feedback on mic tap, actions | Auto-granted |
+| Microphone | `RECORD_AUDIO` | Required | Voice input (STT) | Home screen first launch |
+| Notifications | `POST_NOTIFICATIONS` | Recommended | Push alerts (scheme deadlines, reminders) | Home screen first launch |
+| Camera | `CAMERA` | Optional | OCR bill scan, profile avatar photo | When user taps camera |
+| Location | `ACCESS_COARSE_LOCATION` | Optional | Hyper-local scheme suggestions | When user searches local schemes |
+| SMS Read | `READ_SMS` / `RECEIVE_SMS` | Optional | Auto-read OTP during LAM form filling | When LAM needs OTP |
+| Storage | `READ/WRITE_EXTERNAL_STORAGE` | Optional | Offline cache, PDF downloads (pre-API 29) | Auto (Scoped Storage on modern) |
+| Accessibility Service | `BIND_ACCESSIBILITY_SERVICE` | Critical (LAM) | Core LAM — controls apps (tap, type, scroll) | When user triggers first LAM task |
+| Overlay | `SYSTEM_ALERT_WINDOW` | Critical (LAM) | "Sathio is working" floating pill | When user triggers first LAM task |
+
+> **Strategy:** Never request all permissions upfront. Use contextual, just-in-time permission requests with Luma-style explanation dialogs shown before the system dialog.
 
 ---
 

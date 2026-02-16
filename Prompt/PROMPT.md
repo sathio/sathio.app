@@ -491,7 +491,7 @@ Reference: Luma's onboarding is famous for being:
 - Skippable (but encouraged to complete)
 
 Design the flow:
-1. Welcome (hero illustration) → 2. Get Started (bottom sheet auth) → 3. Phone/OTP → 4. Language Selection → 5. Profile Setup → 6. Interest Selection → 7. Voice Demo → 8. Permissions → 9. Home
+1. Welcome (hero illustration) → 2. Get Started (bottom sheet auth) → 3. Phone/OTP → 4. Language Selection → 5. Profile Setup → 6. Interest Selection → 7. Home
 
 Create lib/features/onboarding/onboarding_flow.dart:
    - PageView-based navigation (no AppBar — just back arrow icon)
@@ -866,45 +866,9 @@ DESIGN — Clean card grid:
    Bottom: "Let's Go" button (black pill)
      - Enabled regardless of selection
      - If nothing selected → still proceeds (default all categories)
-```
 
-### Prompt 2.9 — Voice Demo & Permissions
-```
-Create voice demo + permission screen (Step 7):
-
-lib/features/onboarding/screens/voice_demo_screen.dart:
-
-DESIGN — Simple, encouraging:
-
-   Background: White / #FAFAFA
-   
-   Center content:
-   - Sathio sparkle icon (64x64, orange gradient, subtle pulse)
-   - Title: "Give it a Try!"
-     - Inter Bold, 24px, #111111
-   - Description: "Tap the mic and say: Hello Sathio"
-     - Inter Regular, 16px, #666666
-   
-   Large mic button (center):
-   - Size: 80x80dp, circular
-   - Background: #111111 (black)
-   - Icon: mic, white, 32dp
-   - Tap → request mic permission (if not granted)
-   - On permission granted → start listening
-   - On speech recognized:
-     - Show "Namaste! Main sun sakta hoon! 🎉" response
-     - Success animation (Lottie checkmark)
-   
-   "Skip for now" text link below mic
-   
-   Bottom: "Aage Badhein" button (black pill)
-   
-   Permission flow:
-   - Mic permission requested on first tap
-   - If denied → friendly message, allow to skip
-   - Notification permission: requested via system dialog after voice demo
-   
-After this → Navigate to Home (onboarding complete)
+Navigation: After "Let's Go" → Navigate to Home (onboarding complete).
+Request mic + notification permissions on Home screen first launch instead.
 Store onboarding_complete = true in Hive. Never show onboarding again.
 ```
 
@@ -1556,6 +1520,15 @@ Create government services browsing:
    - State pension check (isAutomated: true)
    - Electricity bill payment (isAutomated: true) ← Cross-app: browser + UPI
    - Mobile recharge (isAutomated: true)
+   - Gas cylinder booking (isAutomated: true) ← HP/Indane/Bharat Gas
+   - Train ticket booking (isAutomated: true) ← IRCTC multi-step
+   - Water bill payment (isAutomated: true) ← Municipal portals
+   - Voter ID application (isAutomated: true) ← NVSP Form 6
+   - Passport application (isAutomated: true) ← Passport Seva portal
+   - Driving license apply/renew (isAutomated: true) ← Sarathi portal
+   - Income/Caste/Domicile certificate (isAutomated: true) ← State e-District
+   - Scholarship application (isAutomated: true) ← National Scholarship Portal
+   - Online shopping (isAutomated: true) ← Amazon/Flipkart/JioMart
 
 5. Tap service → Agent Mode (Sathio does it autonomously)
    - Show AgentOverlay, Sathio starts executing
@@ -1707,9 +1680,12 @@ API STACK FOR THIS PROMPT:
      - planActions(String goal, String screenContext) → uses Gemini 1.5 Pro
        - System prompt: "You are Sathio's action planner for Indian phone users..."
        - Returns: List<ActionStep> (stepType, target, value, description)
-     - readScreen(Uint8List screenshot) → uses Gemini 1.5 Pro Vision
-       - Sends screenshot image to Vision model
+     - readScreen() → MVP: uses Accessibility Service tree (element text/IDs)
+       - Reads visible node tree from Accessibility Service
        - Returns: {elements: [...], currentScreen: "...", possibleActions: [...]}
+       - [FUTURE]: Gemini Vision screenshot → full visual understanding
+       - When element can't be found or captcha appears:
+         → Ask user in their native language and wait for input
    - All calls wrapped with dio, retry logic, and timeout (10s)
    - API key from: .env → GEMINI_API_KEY
 
@@ -1719,7 +1695,8 @@ API STACK FOR THIS PROMPT:
    - Step 2: planActions(goal) → Gemini Pro returns action steps
    - Step 3: Open Target App (android_intent_plus / Launch Intent)
    - Step 4: Loop per step:
-     a. readScreen(screenshot) → Gemini Vision identifies UI elements
+     a. readScreen() → Accessibility tree reads visible UI elements
+        [FUTURE]: Gemini Vision screenshot for complex screens
      b. Find target element via Accessibility Service
      c. Execute action (click, type, scroll)
      d. Wait for screen change (500ms)
@@ -1760,6 +1737,1375 @@ Create the "Sathio is Working" Overlay:
    - Show when executeTask starts
    - Update text at each step ("Clicking Login...", "Filling Aadhaar...")
    - Hide on completion
+```
+
+### Prompt 6.5.5 — Dynamic Universal Agent (Handle ANY Task)
+```
+Implement the Dynamic Agent that handles ANY user request — not just pre-mapped flows.
+This is what makes Sathio a universal cyber cafe replacement.
+
+PHILOSOPHY:
+- Pre-mapped flows (Phase 6.6) = FAST LANE (known, tested scripts)
+- Dynamic Agent = UNIVERSAL LANE (AI figures it out in real-time)
+- The Agent Orchestrator (6.5.3) tries pre-mapped first, falls back to dynamic
+
+API STACK:
+- Screen Reading [MVP]: Accessibility Service tree (reads element text/IDs natively)
+- Screen Reading [FUTURE]: Gemini 1.5 Pro Vision (screenshot → UI understanding)
+- Action Planning: Gemini 1.5 Pro (plans multi-step sequences from a single goal)
+- Intent + Slot Extraction: Gemini 1.5 Flash (fast intent + entity extraction)
+- Device Control: Android Accessibility Service (tap, type, scroll, swipe)
+- Voice I/O: Bhashini/Sarvam STT + TTS
+
+MVP RULE: Wherever Gemini Vision would be needed (captcha, complex UI reading),
+Sathio asks the USER in their native language for help and waits for input.
+Gemini Vision will be integrated in a future update to automate these steps.
+
+1. lib/services/automation/dynamic_agent.dart:
+
+   class DynamicAgent {
+     final GeminiService gemini;
+     final AccessibilityService accessibility;
+     final VoiceInteractionManager voice;
+
+     // Main entry: handle ANY user command
+     Future<TaskResult> executeUnknownTask(String userCommand) async {
+       // Step 1: Understand what the user wants
+       final intent = await gemini.classifyIntent(userCommand);
+       // Returns: { action: "send_whatsapp", app: "WhatsApp",
+       //            target: "Rahul", message: "Happy Birthday",
+       //            confidence: 0.92 }
+
+       // Step 2: Check if pre-mapped flow exists
+       final preMapFlow = TaskFlowRegistry.findFlow(intent.action);
+       if (preMapFlow != null) {
+         return preMapFlow.execute(intent.slots); // FAST LANE
+       }
+
+       // Step 3: No pre-mapped flow → DYNAMIC MODE
+       return executeDynamic(userCommand, intent);
+     }
+
+     Future<TaskResult> executeDynamic(String command, Intent intent) async {
+       // Plan actions using Gemini Pro
+       final plan = await gemini.planDynamicTask(command);
+       // Returns: List<DynamicStep> e.g.:
+       // [
+       //   { action: "open_app", target: "WhatsApp" },
+       //   { action: "search", query: "Rahul" },
+       //   { action: "click", target: "Rahul Kumar" },
+       //   { action: "type", field: "message", value: "Happy Birthday! 🎂" },
+       //   { action: "click", target: "Send" }
+       // ]
+
+       // Execute each step with Vision verification
+       for (final step in plan.steps) {
+         // Take screenshot, send to Gemini Vision
+         final screenshot = await accessibility.captureScreen();
+         final screenState = await gemini.readScreen(screenshot);
+
+         // Find target element
+         final element = screenState.findElement(step.target);
+
+         if (element == null) {
+           // AI couldn't find element → re-plan
+           final newPlan = await gemini.replan(command, screenState);
+           continue;
+         }
+
+         // Execute action
+         await executeAction(step, element);
+
+         // Narrate in user's language
+         await voice.speak(step.narration);
+
+         // Verify success
+         await Future.delayed(Duration(milliseconds: 800));
+       }
+     }
+   }
+
+2. GEMINI VISION SYSTEM PROMPT [FUTURE — not in MVP]:
+   (For MVP, screen reading uses Accessibility tree text.
+    When Sathio encounters something it can't read — captcha,
+    image, complex UI — it asks user in their language and waits.)
+
+   """
+   You are Sathio's eyes. You are looking at an Android phone screen.
+
+   YOUR JOB: Understand what is on the screen and tell the agent what to do next.
+
+   INPUT: A screenshot of the user's phone screen.
+   OUTPUT: JSON describing:
+   {
+     "current_screen": "WhatsApp chat list",
+     "visible_elements": [
+       { "type": "button", "text": "Search", "location": "top-right" },
+       { "type": "text_field", "text": "", "hint": "Search...", "location": "top" },
+       { "type": "list_item", "text": "Rahul Kumar", "location": "row-3" }
+     ],
+     "suggested_action": {
+       "action": "click",
+       "target": "Search icon",
+       "reason": "Need to search for contact 'Rahul'"
+     },
+     "page_state": "ready" | "loading" | "error" | "permission_dialog"
+   }
+
+   RULES:
+   - Be precise about element locations
+   - Identify clickable vs non-clickable elements
+   - Detect loading states, error messages, popups
+   - If you see a permission dialog, report it
+   - If you see a captcha, attempt to read it
+   - NEVER guess — if unsure, say "uncertain"
+   - Identify language of text on screen
+   """
+
+3. GEMINI ACTION PLANNER SYSTEM PROMPT:
+
+   """
+   You are Sathio's brain. You plan how to complete tasks on an Android phone.
+
+   USER GOAL: {user_command}
+   CURRENT SCREEN: {screen_state_json}
+   COLLECTED DATA: {slots_collected_so_far}
+
+   YOUR JOB: Return the next 1-3 actions to take.
+
+   OUTPUT FORMAT (JSON):
+   {
+     "actions": [
+       {
+         "type": "open_app" | "click" | "type" | "scroll" | "swipe_back" |
+                 "wait" | "ask_user" | "take_screenshot" | "open_url",
+         "target": "element text or description",
+         "value": "text to type (if type action)",
+         "narration_hi": "Hindi narration for user",
+         "narration_en": "English narration",
+         "confidence": 0.95
+       }
+     ],
+     "missing_data": ["phone_number", "message_text"],
+     "task_progress": 0.6,
+     "is_complete": false,
+     "needs_user_input": false
+   }
+
+   RULES:
+   - Plan maximum 3 steps ahead (screen may change)
+   - If data is missing, set needs_user_input=true and list missing_data
+   - NEVER enter UPI PIN, bank passwords, or security codes
+   - ALWAYS pause before: payments, form submissions, delete actions
+   - Ask for confirmation before irreversible actions
+   - If stuck for 3 retries, ask user for help
+   - Use Hindi narration that sounds natural and friendly
+   """
+
+4. SMART INTENT ROUTING (lib/services/automation/intent_router.dart):
+
+   Input: User's voice command (any language)
+   Output: Route to correct handler
+
+   ROUTING LOGIC:
+   a) Extract intent via Gemini Flash
+   b) Check TaskFlowRegistry for pre-mapped flow
+      → Match found? → Execute pre-mapped (FAST, reliable)
+      → No match? → Continue to dynamic
+   c) Determine if task needs:
+      - Single app (WhatsApp, YouTube, etc.) → Single-app dynamic
+      - Multiple apps (browser + UPI) → Cross-app dynamic
+      - Web only (government portal) → Browser automation
+      - Information only (no action needed) → Just answer via TTS
+   d) Route to appropriate handler
+
+   EXAMPLE ROUTES:
+   - "Rahul ko WhatsApp pe msg bhejo" → Dynamic: Open WhatsApp
+   - "YouTube pe Arijit Singh laga do" → Dynamic: Open YouTube
+   - "Passport ke liye apply karna hai" → Pre-mapped: passport_flow
+   - "Mera Aadhaar download karo" → Pre-mapped: aadhaar_download_flow
+   - "Kal ka mausam kaisa rahega?" → Info only: Gemini answers + TTS
+   - "Flipkart pe shoes dikhao ₹500 tak" → Dynamic: Open Flipkart
+   - "Mera phone number change karo Jio mein" → Dynamic: Open MyJio
+   - "Instagram pe photo upload karo" → Dynamic: Open Instagram
+   - "Essay likh do plastic pollution pe" → Info: Gemini writes + TTS
+   - "Alarm laga do subah 6 baje" → Device: Set alarm via intent
+   - "WiFi on karo" → Device: Toggle setting
+   - "Paytm se ₹500 Ramesh ko bhejo" → Dynamic: Open Paytm
+
+5. CROSS-APP NAVIGATION (lib/services/automation/app_launcher.dart):
+
+   - Open any installed app via package name or intent
+   - Deep link support:
+     - WhatsApp: "https://wa.me/{phone}?text={msg}"
+     - YouTube: "https://youtube.com/results?search_query={q}"
+     - Google Maps: "geo:0,0?q={address}"
+     - Phone dialer: "tel:{number}"
+     - UPI: "upi://pay?pa={upi_id}&pn={name}&am={amount}"
+     - Email: "mailto:{email}?subject={sub}&body={body}"
+     - Play Store: "market://details?id={package}"
+   - Fallback: Open in browser if app not installed
+   - Detect which apps are installed on device
+
+6. CONVERSATIONAL SLOT FILLING FOR UNKNOWN TASKS:
+
+   When Gemini identifies missing data, Sathio asks naturally:
+
+   Example — User: "Mere dost ko birthday wish bhejo WhatsApp pe"
+   Missing: [friend_name, message_content]
+
+   Sathio: "Kis dost ko bhejna hai? Naam bolein."
+   User: "Rahul"
+   Sathio: "Kya likhu message mein? Ya main likh doon?"
+   User: "Tu likh de"
+   Sathio: → Gemini generates: "Happy Birthday Rahul! 🎂🎉 Bahut saari shubhkamnayein!"
+   Sathio: "Ye bhejoon? — 'Happy Birthday Rahul! Bahut saari shubhkamnayein!'"
+   User: "Haan"
+   → Sathio opens WhatsApp → sends message
+
+7. SAFETY GUARDRAILS (lib/services/automation/safety_guard.dart):
+
+   BLOCKED ACTIONS (Sathio will NEVER do these):
+   - Enter UPI PIN, bank passwords, or OTPs silently
+   - Uninstall apps
+   - Change phone settings (except WiFi/Bluetooth toggles)
+   - Access gallery/photos without explicit permission
+   - Send money without user confirmation
+   - Delete contacts, messages, or files without asking
+   - Access camera without permission dialog
+   - Make phone calls without confirmation
+   - Post on social media without reviewing content
+
+   CONFIRMATION REQUIRED (pause + ask user):
+   - Before any payment/transaction
+   - Before submitting any form
+   - Before sending any message
+   - Before deleting anything
+   - Before downloading large files
+   - Before sharing personal info on any website
+
+   TRANSACTION SAFETY:
+   - Max ₹5,000 per action without extra confirmation
+   - Above ₹5,000: "₹10,000 ka payment hai. Pakka karein? Haan ya nahi?"
+   - ALWAYS show amount before proceeding
+   - NEVER bypass payment confirmation screens
+
+8. HANDLING FAILURES GRACEFULLY:
+
+   - App not installed → "Ye app install nahi hai. Install karein?"
+   - Website loading slow → "Website thodi slow hai. Ruko..."  (wait 10s)
+   - Element not found → Re-read screen, try 3 times
+   - After 3 failures → "Ye kaam abhi nahi ho pa raha.
+     Kya aap khud try karna chahenge? Main guide kar doonga."
+     → Switch to Guided Mode (step-by-step instructions via TTS)
+   - AI confused → "Samajh nahi aaya. Thoda aur detail mein bolo?"
+   - Blocked by captcha → "Captcha aa gaya hai. Padh ke bolo kya likha hai?"
+
+9. TASK MEMORY (lib/services/automation/task_memory.dart):
+
+   - Remember last 10 completed tasks
+   - If user says "Wahi karo jo kal kiya tha" → replay last task
+   - Smart suggestions: "Kal Aadhaar download kiya tha. Kuch aur karna hai?"
+   - Learn user patterns: If user recharges every month → remind
+   - Store frequently used data (name, address) to avoid re-asking
+     (encrypted in Hive with user consent)
+```
+
+### Prompt 6.5.6 — Action Feedback Loop (Self-Improving LAM)
+```
+Implement the feedback system that makes Sathio learn from every task execution.
+This is what separates a dumb script from a real LAM — it gets BETTER over time.
+
+CORE PRINCIPLE:
+- Every action Sathio takes generates a result (success/failure)
+- That result is logged and used to improve future actions
+- Over time, Sathio learns: which buttons work, which screens change,
+  which patterns succeed, and which approaches fail
+
+1. lib/services/automation/feedback/action_logger.dart:
+
+   class ActionLogger {
+     // Log every single action during task execution
+     Future<void> logAction(ActionLog log) async {
+       // Store in local Hive DB
+       await hive.put(log.id, log);
+       // Batch sync to Supabase (when online, anonymized)
+       await syncQueue.add(log.anonymized());
+     }
+   }
+
+   class ActionLog {
+     String taskId;           // Which task this belongs to
+     String taskType;         // "aadhaar_download", "whatsapp_message", etc.
+     String actionType;       // "click", "type", "scroll", "read_screen"
+     String targetElement;    // "Submit button", "Search field"
+     String targetApp;        // "Chrome", "WhatsApp", "IRCTC"
+     String targetUrl;        // URL if web-based
+     bool success;            // Did the action work?
+     String failureReason;    // If failed: "element_not_found", "timeout", etc.
+     int retryCount;          // How many retries before success
+     Duration duration;       // How long the action took
+     String screenBefore;     // Hash/summary of screen before action
+     String screenAfter;      // Hash/summary of screen after action
+     DateTime timestamp;
+     String language;         // User's language during this task
+   }
+
+2. lib/services/automation/feedback/task_report.dart:
+
+   class TaskReport {
+     // Generated after every task (success or failure)
+     String taskId;
+     String taskType;
+     String userCommand;      // Original voice command
+     bool overallSuccess;     // Did the full task complete?
+     int totalSteps;
+     int successfulSteps;
+     int failedSteps;
+     Duration totalDuration;
+     String failurePoint;     // Which step caused failure (if any)
+     String failureSolution;  // How it was resolved (retry/replan/user-help/abort)
+     UserRating? rating;      // User's thumbs up/down/neutral
+     List<ActionLog> actions; // All actions in this task
+   }
+
+   // After every task, generate report:
+   // → Save locally in Hive
+   // → Sync anonymized version to Supabase for analytics
+   // → Feed insights back into planning
+
+3. lib/services/automation/feedback/learning_engine.dart:
+
+   class LearningEngine {
+     // Learns from past task executions to improve future ones
+
+     // A) ELEMENT PATTERN LEARNING:
+     //    Track which element text/selectors work per screen
+     //    Example: On UIDAI site, "Submit" was renamed to "Verify & Download"
+     //    → Next time, try "Verify & Download" first, "Submit" as fallback
+     Map<String, List<String>> learnedElementNames;
+
+     // B) TIMING LEARNING:
+     //    Track average load times per website/app
+     //    Example: IRCTC takes 5s to load, not 2s
+     //    → Adjust wait times dynamically
+     Map<String, Duration> learnedWaitTimes;
+
+     // C) FLOW ADAPTATION:
+     //    Track which steps frequently fail in pre-mapped flows
+     //    Example: Step 4 of Aadhaar flow fails 30% of the time
+     //    → Add extra wait or alternative approach for Step 4
+     Map<String, StepStats> stepSuccessRates;
+
+     // D) APP LAYOUT CHANGES:
+     //    Detect when a website/app changes layout
+     //    Example: PM-Kisan moved "Beneficiary Status" from sidebar to top menu
+     //    → Log change, switch to dynamic Vision for that step
+     //    → Store new layout pattern for future use
+     Map<String, LayoutSnapshot> knownLayouts;
+
+     // E) USER PREFERENCE LEARNING:
+     //    Track user choices to predict future preferences
+     //    Example: User always picks "Sleeper Class" on IRCTC
+     //    → Pre-suggest: "Sleeper class chalega? Pichli bar bhi yahi liya tha"
+     Map<String, String> userPreferences;
+
+     // Methods:
+     Future<void> processTaskReport(TaskReport report);
+     List<String> getAlternativeElements(String original, String screen);
+     Duration getOptimalWaitTime(String urlOrApp);
+     String predictUserChoice(String taskType, String field);
+   }
+
+4. SELF-HEALING MECHANISM:
+
+   When an action fails during execution:
+   
+   STEP 1: Immediate retry (same approach, 1 more time)
+   STEP 2: Check learning_engine for alternative element names
+           → Try "Verify & Download" instead of "Submit"
+   STEP 3: Re-read screen with Gemini Vision
+           → "I tried clicking 'Submit' but it's not there.
+              What do you see on screen? What should I click?"
+   STEP 4: Re-plan from current state
+           → gemini.replan(goal, currentScreenState, failedAction)
+           → Gemini generates new approach considering what failed
+   STEP 5: If 3 replans fail → Ask user
+           → "Ye step kaam nahi kar raha. Screen pe kya dikh raha hai?"
+           → User describes → Sathio tries based on description
+   STEP 6: If still failing → Switch to Guided Mode
+           → "Main khud nahi kar pa raha. Aapko guide karta hoon step by step."
+
+5. GEMINI CONTEXT INJECTION (feeding learnings back):
+
+   When planning actions, inject past learnings into the Gemini prompt:
+
+   """
+   PAST LEARNINGS FOR THIS TASK:
+   - On {url}, the button "Submit" was renamed to "Verify & Download" (last seen: {date})
+   - Average page load time: {X} seconds (adjust waits accordingly)
+   - Step 4 fails {Y}% of the time — use Vision to verify before clicking
+   - User usually selects: {preference} for {field}
+   - Last successful execution: {date} — {steps} steps, {duration}
+   """
+
+   This makes Gemini smarter each time the same task is run.
+
+6. ANALYTICS DASHBOARD DATA (synced to Supabase):
+
+   Table: task_analytics (anonymized, no PII)
+   - task_type, success_rate, avg_duration
+   - most_failed_step, failure_reasons
+   - app_or_url, layout_change_detected
+   - user_language, device_model, android_version
+
+   Use this data to:
+   - Identify which task flows need fixing
+   - Detect website layout changes across all users
+   - Prioritize which new task flows to pre-map
+   - Measure overall LAM reliability per service
+
+7. PROACTIVE IMPROVEMENT ALERTS:
+
+   When task_analytics detects patterns:
+   - Success rate drops below 70% for a task → Flag for developer review
+   - Website layout change detected by 3+ users → Update pre-mapped flow
+   - New popular task (10+ dynamic executions) → Create pre-mapped flow
+   - Specific step takes 3x longer than expected → Optimize wait times
+```
+
+### Prompt 6.5.7 — Agent Identity System (Bootstrap Context)
+```
+Implement the Agent Identity System — the context files that define WHO Sathio is
+and WHO the user is. Injected into every Gemini call so the AI always has context.
+
+Inspired by OpenClaw's SOUL.md / USER.md / TOOLS.md / IDENTITY.md pattern,
+adapted for Sathio's voice-first, Bharat-focused architecture.
+
+1. lib/data/agent_identity/soul.dart:
+
+   SATHIO'S SOUL (injected as system prompt prefix in EVERY Gemini call):
+
+   """
+   # WHO YOU ARE
+   You are Sathio (साथियो) — India's AI companion for the common person.
+   Your name means "companion" in Hindi/Bhojpuri. You are NOT a chatbot.
+   You are a trusted friend who DOES things for people.
+
+   # YOUR PERSONALITY
+   - Warm, patient, never condescending
+   - Talk like a helpful neighbor, not a corporate assistant
+   - Use simple Hindi/Hinglish by default, switch to user's preferred language
+   - Say "main" not "hum", "aap" not "tu"
+   - Add encouraging words: "Ho jayega!", "Tension mat lo", "Main hoon na"
+   - Use emojis sparingly but naturally: 👍 ✅ 🎉
+   - NEVER use English jargon unless user understands it
+   - If user seems frustrated, acknowledge it: "Samajh sakta hoon, try karte hain"
+
+   # YOUR CAPABILITIES
+   - You can control the user's phone (open apps, click buttons, type text)
+   - You can fill forms on government websites
+   - You can make payments (with user confirmation)
+   - You can search the web, shop online, book tickets
+   - You can send messages on WhatsApp, make calls
+   - You can download documents (Aadhaar, PAN, certificates)
+   - You understand voice in 10+ Indian languages
+   - You NEVER lie about your capabilities — if you can't do something, say so
+
+   # YOUR BOUNDARIES
+   - NEVER enter passwords, PINs, or security codes without user speaking them
+   - NEVER make financial transactions without explicit confirmation
+   - NEVER access personal photos/gallery without asking
+   - NEVER share user's personal data with anyone
+   - NEVER pretend to be human
+   - If unsure, ASK — don't guess
+   - If a task is dangerous/illegal, refuse politely
+
+   # YOUR TONE BY CONTEXT
+   - Government tasks: Professional but reassuring ("Form sahi se bhar raha hoon")
+   - Shopping: Enthusiastic ("Ye wala achha dikhta hai! Dekhein?")
+   - Bills/Payments: Careful ("₹450 ka bill hai. Pay karein?")
+   - Casual chat: Friendly ("Haan bolo, kya help chahiye?")
+   - Errors/Failures: Calm ("Ek minute, doosra tarika try karta hoon")
+   """
+
+2. lib/services/agent/user_context_builder.dart:
+
+   USER CONTEXT (built dynamically from user profile, injected per call):
+
+   """
+   # ABOUT THIS USER
+   Name: {user.name}
+   Preferred Language: {user.language} (e.g., Hindi, Bhojpuri, Tamil)
+   State: {user.state}
+   District: {user.district}
+   Age Group: {user.ageGroup}
+   Digital Comfort: {user.digitalComfort} (low/medium/high)
+
+   # USER'S SAVED DATA (encrypted, user consented)
+   Aadhaar Last 4: {if saved}
+   Phone: {user.phone}
+   Common UPI: {if saved}
+   Family Members: {if saved}
+   Frequently Used Services: {from task history}
+   Last 3 Tasks: {from session history}
+
+   # USER PREFERENCES (learned over time)
+   Preferred Train Class: {if learned}
+   Preferred Recharge Plan: {if learned}
+   Preferred Shopping Platform: {if learned}
+   Communication Style: {formal/casual, learned from interactions}
+   """
+
+   class UserContextBuilder {
+     // Build fresh context for each Gemini call
+     String buildContext(UserProfile profile, LearningEngine learnings) {
+       // Merge profile data + learned preferences
+       // Strip any null/empty fields
+       // Return formatted context string
+     }
+   }
+
+3. lib/data/agent_identity/tools_manifest.dart:
+
+   TOOLS MANIFEST (tells Gemini what actions are available):
+
+   """
+   # AVAILABLE TOOLS
+   You have access to the following actions on the user's phone:
+
+   DEVICE ACTIONS:
+   - open_app(packageName) — Open any installed app
+   - open_url(url) — Open URL in browser
+   - click(elementText) — Click/tap on screen element
+   - type(text) — Type text into focused field
+   - scroll(direction, amount) — Scroll up/down/left/right
+   - swipe_back() — Go back one screen
+   - take_screenshot() — Capture current screen
+   - read_screen() — Get all visible text/elements via Vision
+   - set_alarm(time) — Set device alarm
+   - toggle_wifi() — Turn WiFi on/off
+   - toggle_bluetooth() — Turn Bluetooth on/off
+
+   COMMUNICATION:
+   - send_whatsapp(contact, message) — Send WhatsApp message
+   - make_call(number) — Make phone call (with confirmation)
+   - send_sms(number, message) — Send SMS
+
+   NAVIGATION:
+   - deep_link(uri) — Open deep link (UPI, maps, store, etc.)
+   - search_google(query) — Search and read results
+
+   USER INTERACTION:
+   - speak(text) — Speak to user via TTS
+   - ask_user(question) — Ask user for input via voice
+   - confirm(message) — Ask yes/no confirmation
+   - show_options(items) — Show selectable options
+
+   MEMORY:
+   - remember(key, value) — Store user preference
+   - recall(key) — Retrieve stored preference
+   - search_memory(query) — Search past interactions
+   """
+
+4. CONTEXT INJECTION ORDER (every Gemini call):
+
+   System Prompt:
+   [1] SOUL (personality — always injected, ~300 tokens)
+   [2] TOOLS_MANIFEST (capabilities — always injected, ~200 tokens)
+   [3] USER_CONTEXT (profile + preferences — always injected, ~150 tokens)
+   [4] TASK_CONTEXT (current task learnings — if doing LAM, ~100 tokens)
+   [5] MEMORY_CONTEXT (relevant memories — if found, ~200 tokens)
+
+   Total baseline: ~950 tokens system prompt
+   This gives Gemini full context about who it is, who the user is,
+   and what it can do — BEFORE processing the user's actual request.
+```
+
+### Prompt 6.5.8 — Advanced Memory System (Remember Everything)
+```
+Implement a persistent memory system so Sathio truly "remembers" the user
+across sessions, days, weeks, and months. Inspired by OpenClaw's memory
+architecture, adapted for mobile-first with Hive + Supabase.
+
+ARCHITECTURE:
+┌─────────────────────────────────────────────┐
+│  SHORT-TERM: Current session context        │
+│  (in-memory, lost when app closes)          │
+├─────────────────────────────────────────────┤
+│  DAILY LOG: Today's interactions            │
+│  (Hive box, one entry per day)              │
+├─────────────────────────────────────────────┤
+│  LONG-TERM: Curated permanent facts         │
+│  (Hive box, encrypted, user-consented)      │
+├─────────────────────────────────────────────┤
+│  VECTOR INDEX: Searchable memory embeddings │
+│  (Gemini embeddings, stored in Hive/SQLite) │
+├─────────────────────────────────────────────┤
+│  CLOUD SYNC: Backup + cross-device          │
+│  (Supabase, encrypted, opt-in)              │
+└─────────────────────────────────────────────┘
+
+1. lib/services/memory/daily_log.dart:
+
+   class DailyLog {
+     // One log per day, stored in Hive
+     // Format: List of MemoryEntry
+
+     Future<void> log(MemoryEntry entry);
+     Future<List<MemoryEntry>> getToday();
+     Future<List<MemoryEntry>> getYesterday();
+     Future<List<MemoryEntry>> getDate(DateTime date);
+     Future<void> compact(DateTime olderThan); // Remove entries > 30 days
+   }
+
+   class MemoryEntry {
+     DateTime timestamp;
+     String type;        // "task", "preference", "fact", "interaction"
+     String summary;     // "User downloaded Aadhaar PDF successfully"
+     String? taskType;   // "aadhaar_download" (if task-related)
+     bool success;       // true
+     String language;    // "hi" (language used during this interaction)
+     Map<String, dynamic>? metadata; // Additional context
+   }
+
+   WHAT GETS LOGGED:
+   - Every completed task (type: "task")
+   - User preferences discovered (type: "preference")
+     → "User prefers Sleeper class on trains"
+   - Important facts shared by user (type: "fact")
+     → "User has 2 children, names: Riya and Arjun"
+   - Interactions that reveal context (type: "interaction")
+     → "User struggled with OTP entry, may need more guidance"
+
+2. lib/services/memory/long_term_memory.dart:
+
+   class LongTermMemory {
+     // Curated, permanent facts about the user
+     // Only stores IMPORTANT data (not daily noise)
+     // Encrypted in Hive with user's consent
+
+     Future<void> remember(String key, String value, {String? category});
+     Future<String?> recall(String key);
+     Future<List<MemoryFact>> getByCategory(String category);
+     Future<void> forget(String key); // User can ask to delete
+     Future<Map<String, dynamic>> exportAll(); // GDPR-style export
+   }
+
+   CATEGORIES:
+   - personal: name, age, family members, address
+   - preferences: train class, shopping platform, recharge plan
+   - documents: Aadhaar last 4, PAN status, passport status
+   - services: last electricity bill amount, gas connection ID
+   - patterns: "recharges on 1st of every month"
+   - skills: digital comfort level, needs more/less guidance
+
+   AUTO-CURATION RULES:
+   - After 3+ similar tasks → extract patterns → save to long-term
+   - When user explicitly says "yaad rakhna" → save immediately
+   - Personal info shared during tasks → save with consent
+   - Preferences that repeat 3+ times → save as preference
+   - Daily logs older than 30 days → extract important facts → compact
+
+3. lib/services/memory/memory_search.dart:
+
+   VECTOR SEARCH using Gemini Embeddings:
+
+   class MemorySearch {
+     // Hybrid search: BM25 (keyword) + Vector (semantic)
+
+     Future<void> indexMemory(MemoryEntry entry) async {
+       // Generate embedding via Gemini API
+       final embedding = await gemini.embedContent(entry.summary);
+       // Store in local vector index (Hive or SQLite)
+       await vectorStore.insert(entry.id, embedding, entry.summary);
+       // Also index keywords for BM25
+       await keywordIndex.insert(entry.id, entry.summary);
+     }
+
+     Future<List<SearchResult>> search(String query) async {
+       // Generate query embedding
+       final queryEmbed = await gemini.embedContent(query);
+
+       // Vector search (semantic similarity)
+       final vectorResults = await vectorStore.search(queryEmbed, limit: 10);
+
+       // BM25 keyword search
+       final keywordResults = await keywordIndex.search(query, limit: 10);
+
+       // Hybrid merge: 70% vector + 30% keyword
+       return mergeResults(vectorResults, keywordResults,
+         vectorWeight: 0.7, textWeight: 0.3);
+     }
+
+     List<SearchResult> mergeResults(
+       List<SearchResult> vector,
+       List<SearchResult> keyword,
+       {double vectorWeight = 0.7, double textWeight = 0.3}
+     ) {
+       // Union by entry ID
+       // finalScore = vectorWeight * vectorScore + textWeight * textScore
+       // Sort by finalScore descending
+       // Return top results
+     }
+   }
+
+   WHY HYBRID SEARCH?
+   - "Download ID card" → Vector matches "Aadhaar download" (semantic)
+   - "IRCTC ticket" → BM25 matches exact word "IRCTC" (keyword)
+   - "Kal kya kiya" → Vector matches recent task summaries (semantic)
+   - "₹450 bill" → BM25 matches exact amount (keyword)
+
+4. lib/services/memory/context_window_manager.dart:
+
+   AUTO-FLUSH before context window fills up:
+
+   class ContextWindowManager {
+     static const int MAX_CONTEXT_TOKENS = 128000; // Gemini 1.5 Pro
+     static const int RESERVE_FLOOR = 20000;
+     static const int FLUSH_THRESHOLD = 4000;
+
+     // When session tokens approach limit:
+     // 1. Extract important facts from conversation
+     // 2. Save to daily log + long-term memory
+     // 3. Compact old messages from context
+     // 4. Keep: system prompt + recent 5 messages + extracted context
+
+     Future<void> checkAndFlush(List<Message> messages) async {
+       final tokenCount = estimateTokens(messages);
+       final limit = MAX_CONTEXT_TOKENS - RESERVE_FLOOR;
+
+       if (tokenCount > limit - FLUSH_THRESHOLD) {
+         // FLUSH: Save important context before compaction
+         final important = await extractImportantFacts(messages);
+         await dailyLog.logAll(important);
+         await longTermMemory.saveDiscoveredFacts(important);
+
+         // COMPACT: Remove old messages, keep summary
+         final summary = await gemini.summarize(messages.sublist(0, -5));
+         messages.replaceRange(0, messages.length - 5, [
+           Message.system("Previous conversation summary: $summary")
+         ]);
+       }
+     }
+   }
+
+5. MEMORY INJECTION INTO GEMINI CALLS:
+
+   Before every Gemini call, automatically:
+
+   a) Load today's daily log + yesterday's log (~recent context)
+   b) Load relevant long-term memories for current intent
+   c) If user mentions something vague ("wahi karo"), vector search
+   d) Inject as part of system prompt under USER_CONTEXT
+
+   Example injection:
+   """
+   # RECENT MEMORY
+   - Today: User asked about electricity bill, paid ₹450 via UPI
+   - Yesterday: Downloaded Aadhaar PDF, checked PM-Kisan status
+
+   # RELEVANT LONG-TERM MEMORY
+   - User's electricity provider: Bihar State Power (BSPHCL)
+   - User's consumer number: 12345678 (saved with consent)
+   - Last bill amount: ₹450 (paid 16 Feb 2026)
+   - User prefers UPI payment via PhonePe
+
+   # LEARNED PATTERNS
+   - User recharges Jio on ~1st of every month (₹299 plan)
+   - User checks PM-Kisan status every 2-3 months
+   """
+
+6. USER CONTROL OVER MEMORY:
+
+   - "Sathio, kya yaad hai mere baare mein?" → List all stored memories
+   - "Ye bhool jao" / "Delete my data" → Forget specific or all memories
+   - "Ye yaad rakhna: meri beti ka naam Riya hai" → Save immediately
+   - Settings screen: Toggle memory on/off, export data, delete all
+   - ALL personal data encrypted at rest in Hive
+   - Cloud sync ONLY if user opts in
+```
+
+### Prompt 6.5.9 — Session Replay & Context Persistence
+```
+Implement session management so Sathio can replay past tasks,
+maintain context across app restarts, and learn from history.
+
+1. lib/services/session/session_manager.dart:
+
+   class SessionManager {
+     // Each conversation/task = one session
+     // Sessions persist locally in Hive as structured data
+
+     Future<Session> startSession(String? initialCommand);
+     Future<void> addMessage(Session session, SessionMessage msg);
+     Future<void> endSession(Session session, TaskResult result);
+     Future<List<Session>> getRecentSessions(int count);
+     Future<Session?> getSession(String sessionId);
+     Future<List<Session>> searchSessions(String query);
+   }
+
+   class Session {
+     String id;                    // UUID
+     DateTime startTime;
+     DateTime? endTime;
+     String? initialCommand;       // "Aadhaar download karo"
+     String? taskType;             // "aadhaar_download"
+     SessionStatus status;         // active, completed, failed, cancelled
+     List<SessionMessage> messages; // Full conversation
+     TaskResult? result;           // Final result
+     Map<String, dynamic> slots;   // Data collected (name, aadhaar no, etc.)
+     String language;              // User's language during session
+   }
+
+   class SessionMessage {
+     DateTime timestamp;
+     String role;        // "user", "sathio", "system"
+     String content;     // Message text
+     String? action;     // If Sathio took an action: "click", "type", etc.
+     String? screenshot; // Hash of screen state (optional)
+   }
+
+2. SESSION REPLAY (lib/services/session/session_replay.dart):
+
+   When user says "Wahi karo jo kal kiya tha" or "Phir se Aadhaar download":
+
+   class SessionReplay {
+     Future<TaskResult> replaySession(Session pastSession) async {
+       // Step 1: Ask for confirmation
+       await voice.speak("Pichli bar ${pastSession.taskType} kiya tha. "
+                        "Wahi same data se karein?");
+
+       // Step 2: Check if saved slots are still valid
+       final slots = pastSession.slots;
+       // Validate: Aadhaar number still 12 digits? Name still correct?
+
+       // Step 3: If pre-mapped flow exists, use it with saved slots
+       final flow = TaskFlowRegistry.findFlow(pastSession.taskType);
+       if (flow != null) {
+         return flow.execute(slots);
+       }
+
+       // Step 4: If dynamic task, replay the action sequence
+       return dynamicAgent.replayActions(pastSession.messages);
+     }
+   }
+
+3. SMART SESSION SEARCH (hybrid search across past sessions):
+
+   When user says something vague, search past sessions:
+
+   class SessionSearch {
+     Future<List<Session>> search(String query) async {
+       // Use MemorySearch (hybrid BM25 + vector) across session data
+       final results = await memorySearch.searchSessions(query);
+       return results;
+     }
+
+     // Natural language queries:
+     // "Wahi karo" → Most recent completed task
+     // "Jo kal kiya" → Yesterday's tasks
+     // "Aadhaar wala" → Sessions with taskType containing "aadhaar"
+     // "₹299 wala recharge" → Sessions with ₹299 in slot data
+     // "Rahul ko message" → Sessions involving WhatsApp + "Rahul"
+   }
+
+4. CONTEXT PERSISTENCE ACROSS APP RESTARTS:
+
+   class ContextPersistence {
+     // Save critical context when app goes to background/closes
+     // Restore when app reopens
+
+     Future<void> saveContext() async {
+       await hive.put('last_session', activeSession.toJson());
+       await hive.put('last_screen_state', currentScreenState);
+       await hive.put('active_task_progress', taskProgress);
+     }
+
+     Future<void> restoreContext() async {
+       final lastSession = await hive.get('last_session');
+       if (lastSession != null && wasRecent(lastSession.startTime)) {
+         // Resume interrupted task
+         await voice.speak("Pichla kaam adhoora tha. Jahan se chhoda tha "
+                          "wahan se continue karein?");
+         // Wait for user confirmation
+         // If yes → resume from last successful step
+         // If no → start fresh
+       }
+     }
+   }
+
+5. SESSION ANALYTICS & INSIGHTS:
+
+   Weekly summary (optional notification):
+   "Aapne is hafte 5 kaam kiye Sathio se:
+    ✅ Aadhaar download
+    ✅ Bijli bill payment (₹450)
+    ✅ Jio recharge (₹299)
+    ✅ PM-Kisan status check
+    ❌ IRCTC ticket (website down tha)
+    Kuch aur karna hai?"
+
+   Monthly patterns:
+   - Track which tasks repeat → proactive reminders
+   - Track success rates → improve flows
+   - Track user's growing confidence → reduce guidance over time
+```
+
+---
+
+## 📋 PHASE 6.6: LAM TASK FLOWS (Pre-Mapped Service Scripts)
+
+> These are the pre-mapped action sequences that make LAM reliable.
+> Each flow defines the exact steps the Agent Orchestrator follows.
+> Store in: `lib/data/task_flows/`
+
+### Prompt 6.6.1 — Aadhaar Download
+```
+Create lib/data/task_flows/aadhaar_download_flow.dart:
+
+Task: Download e-Aadhaar PDF
+Target: https://myaadhaar.uidai.gov.in/
+Slots Required: [aadhaarNumber (12 digits)]
+
+FLOW:
+1. OPEN_URL: "https://myaadhaar.uidai.gov.in/"
+   Narrate: "UIDAI website khol raha hoon..."
+2. WAIT: Page load (3s)
+3. READ_SCREEN: Find "Download Aadhaar" or "Get Aadhaar" link
+4. CLICK: "Download Aadhaar" button
+5. WAIT: Form loads (2s)
+6. SLOT_FILL: Ask user → "Aapka 12 digit Aadhaar number bolein"
+   Validate: 12 digits only
+7. TYPE: Input Aadhaar number into field
+   Narrate: "Aadhaar number daal raha hoon..."
+8. CLICK: "Send OTP" button
+   Narrate: "OTP bhej raha hoon aapke phone pe..."
+9. WAIT_OTP: Auto-read OTP from SMS (READ_SMS permission)
+   Fallback: "OTP bolo jo aapke phone pe aaya"
+10. TYPE: Enter OTP
+11. SOLVE_CAPTCHA: Ask user to read captcha aloud in their language
+    Narrate: "Ek captcha aa gaya hai. Screen pe jo likha dikh raha hai woh padh ke bolein."
+    [FUTURE]: Gemini Vision will auto-solve captchas when integrated
+12. CLICK: "Verify & Download" button
+13. WAIT: Download starts (5s)
+14. VERIFY: PDF saved to Downloads
+    Narrate: "Ho gaya! Aadhaar PDF Downloads mein save hai. Dikhaoon?"
+
+Error Handlers:
+- Invalid Aadhaar → "Ye number galat lag raha hai. Phir se bolein?"
+- OTP expired → "OTP expire ho gaya. Phir se bhejoon?"
+- UIDAI down → "UIDAI website abhi kaam nahi kar rahi. Baad mein try karein."
+```
+
+### Prompt 6.6.2 — PAN Card Application
+```
+Create lib/data/task_flows/pan_card_flow.dart:
+
+Task: Apply for New PAN Card
+Target: https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html
+Slots Required: [fullName, dob, mobile, email, aadhaarNumber, address]
+
+FLOW:
+1. OPEN_URL: NSDL PAN portal
+   Narrate: "PAN card ke liye NSDL website khol raha hoon..."
+2. CLICK: "Apply Online" → "New PAN - Indian Citizen (Form 49A)"
+3. SLOT_FILL_MULTI: Collect all details conversationally:
+   - "Aapka poora naam bolein" → fullName
+   - "Janam tithi bolein (din mahina saal)" → dob
+   - "Mobile number?" → mobile
+   - "Email address hai? Nahi toh skip bolein" → email
+   - "Aadhaar number?" → aadhaarNumber
+   - "Ghar ka pata — state aur district bolein" → address
+   Narrate: "Sab details mil gayi. Ab form bhar raha hoon..."
+4. TYPE_ALL: Fill each form field with collected data
+   Narrate per field: "Naam daal raha hoon... DOB daal raha hoon..."
+5. CLICK: Submit form
+6. WAIT: Acknowledgement number generated
+7. SCREENSHOT: Save acknowledgement
+   Narrate: "PAN application submit ho gayi! Acknowledgement number save kar liya."
+
+Payment Note: "₹107 ka payment karna hoga. UPI se karein?"
+→ Pause at payment gateway for user to enter UPI PIN
+```
+
+### Prompt 6.6.3 — PM-Kisan Registration & Status
+```
+Create lib/data/task_flows/pm_kisan_flow.dart:
+
+Task A: Check PM-Kisan Status
+Target: https://pmkisan.gov.in/
+Slots Required: [aadhaarNumber OR mobileNumber]
+
+FLOW (Status Check):
+1. OPEN_URL: "https://pmkisan.gov.in/"
+   Narrate: "PM-Kisan ki website khol raha hoon..."
+2. CLICK: "Beneficiary Status" link
+3. SLOT_FILL: "Aadhaar number ya mobile number bolein"
+4. TYPE: Enter number
+5. CLICK: "Get Data" button
+6. READ_SCREEN: Extract status info
+7. TTS: Read status aloud
+   "Aapki 16th installment ₹2,000 — 15 Jan 2026 ko credit hui."
+
+Task B: New Registration
+Slots Required: [aadhaarNumber, name, state, district, subDistrict, village, bankAccount, ifsc]
+
+FLOW (Registration):
+1. OPEN_URL: PM-Kisan → New Farmer Registration
+2. SLOT_FILL_MULTI: Conversational data collection
+   Narrate: "Kuch details chahiye..."
+3. TYPE_ALL: Fill registration form
+4. CLICK: Submit → Save acknowledgement
+```
+
+### Prompt 6.6.4 — Electricity Bill Payment
+```
+Create lib/data/task_flows/electricity_bill_flow.dart:
+
+Task: Pay Electricity Bill
+Target: State-specific electricity board website OR UPI app
+Slots Required: [consumerNumber, stateBoard]
+
+FLOW:
+1. SLOT_FILL: "Kaunse state ka bijli bill hai?"
+   → Map to correct board (e.g., UP → UPPCL, MH → MSEDCL)
+2. SLOT_FILL: "Consumer number bolein, ya bill dikhao camera ko"
+   → If camera: REQUEST_CAMERA → OCR via ML Kit → extract consumer number
+   → If voice: validate format
+3. OPEN_URL: State electricity board portal
+   Narrate: "Bijli board ki website khol raha hoon..."
+4. TYPE: Consumer number
+5. CLICK: "View Bill"
+6. READ_SCREEN: Extract bill amount, due date
+   TTS: "Aapka bijli bill ₹1,850 hai. Due date 28 Feb. Pay karein?"
+7. USER_CONFIRM: "Haan" → proceed
+8. REDIRECT_UPI: Open Google Pay/PhonePe with amount pre-filled
+   → Deep link: upi://pay?pa=...&pn=UPPCL&am=1850
+   Narrate: "UPI app khol raha hoon. Sirf PIN daalna hai."
+9. WAIT: User enters UPI PIN (NEVER access PIN)
+10. VERIFY: Payment success
+    Narrate: "₹1,850 ka payment ho gaya! Receipt save kar di."
+```
+
+### Prompt 6.6.5 — Mobile Recharge
+```
+Create lib/data/task_flows/mobile_recharge_flow.dart:
+
+Task: Recharge Mobile Number
+Target: Carrier app/website OR UPI app
+Slots Required: [mobileNumber, operator, planType]
+
+FLOW:
+1. SLOT_FILL: "Kis number ka recharge karna hai?"
+   → Auto-detect operator from number prefix
+   Narrate: "Lagta hai ye Jio ka number hai. Sahi hai?"
+2. SLOT_FILL: "Kitne ka recharge? Ya bolein 'sasta data pack'"
+   → If vague: Show top 3 plans with prices via TTS
+   "Jio ke 3 plan hain: ₹149 — 2GB/day 28 din,
+    ₹249 — 2.5GB/day 28 din, ₹479 — 2GB/day 56 din. Kaunsa?"
+3. USER_SELECT: User picks plan
+4. REDIRECT_UPI: Pre-fill recharge amount in UPI app
+   Narrate: "₹249 ka recharge kar raha hoon. UPI PIN daalo."
+5. WAIT: UPI PIN entry
+6. VERIFY: Success
+   Narrate: "Recharge ho gaya! ₹249 — 2.5GB/day, 28 din valid."
+```
+
+### Prompt 6.6.6 — Gas Cylinder Booking
+```
+Create lib/data/task_flows/gas_booking_flow.dart:
+
+Task: Book LPG Gas Cylinder
+Target: MyHP Gas / Indane / Bharat Gas app/website
+Slots Required: [lpgConsumerNumber, provider]
+
+FLOW:
+1. SLOT_FILL: "Kaunsa gas hai — HP, Indane ya Bharat Gas?"
+2. SLOT_FILL: "LPG consumer ID bolein (bill pe likha hota hai)"
+3. OPEN_URL: Provider portal (e.g., myhpgas.in)
+   Narrate: "HP Gas ki website khol raha hoon..."
+4. TYPE: Consumer number + login
+5. CLICK: "Book Refill" button
+6. READ_SCREEN: Confirm booking details
+   TTS: "14.2 kg cylinder book ho raha hai. ₹903 lagega. Confirm karein?"
+7. USER_CONFIRM: "Haan"
+8. CLICK: Confirm booking
+9. READ_SCREEN: Booking number + expected delivery
+   Narrate: "Cylinder book ho gaya! Booking ID: HP-2026-XXXXX. 3-4 din mein delivery."
+```
+
+### Prompt 6.6.7 — Train Ticket Booking (IRCTC)
+```
+Create lib/data/task_flows/train_booking_flow.dart:
+
+Task: Book Train Ticket via IRCTC
+Target: IRCTC app or https://www.irctc.co.in/
+Slots Required: [from, to, date, class, passengers]
+
+FLOW:
+1. SLOT_FILL_MULTI:
+   - "Kahan se jaana hai?" → from station
+   - "Kahan jaana hai?" → to station
+   - "Kis date ko?" → date
+   - "Kitne log?" → passenger count
+   - "Class? Sleeper, AC 3-tier, ya General?" → class
+2. OPEN_URL: IRCTC
+   Narrate: "IRCTC pe trains dhundh raha hoon..."
+3. TYPE_ALL: Fill search form (from, to, date, class)
+4. CLICK: "Find Trains"
+5. READ_SCREEN: Extract train list with availability
+   TTS: "3 trains mil gayi:
+   1. Rajdhani — ₹2,100, seats available
+   2. Duronto — ₹1,800, waiting list
+   3. Gitanjali — ₹900, seats available
+   Kaunsi book karein?"
+6. USER_SELECT: Pick train
+7. SLOT_FILL: Passenger details (if not in profile)
+   "Passenger ka naam, age, gender bolein"
+8. TYPE_ALL: Fill passenger form
+9. CLICK: "Book Now"
+10. REDIRECT_PAYMENT: UPI/Debit card
+    Narrate: "₹900 pay karna hai. Payment screen aa gayi."
+11. WAIT: User completes payment
+12. VERIFY: PNR generated
+    Narrate: "Ticket book ho gayi! PNR number hai [XXXXX]. Screenshot save kar liya."
+```
+
+### Prompt 6.6.8 — Ration Card Application
+```
+Create lib/data/task_flows/ration_card_flow.dart:
+
+Task: Apply for New Ration Card
+Target: State-specific PDS portal (e.g., nfsa.gov.in → state link)
+Slots Required: [headOfFamily, familyMembers[], state, district, address, aadhaarNumber, income]
+
+FLOW:
+1. SLOT_FILL: "Kaunse state mein rehte ho?"
+   → Map to correct state PDS portal
+2. OPEN_URL: State PDS portal
+   Narrate: "Ration card ke liye [state] ki website khol raha hoon..."
+3. SLOT_FILL_MULTI: Collect family details conversationally:
+   - Head of family name, Aadhaar, DOB
+   - Each family member (name, relation, Aadhaar, DOB)
+   - Address, income category (APL/BPL/AAY)
+4. TYPE_ALL: Fill application form
+   Narrate: "Form bhar raha hoon... Naam daala... Address daala..."
+5. UPLOAD: Aadhaar copies (guide user to select files)
+   Narrate: "Aadhaar ki photo select karo gallery se"
+6. CLICK: Submit application
+7. SCREENSHOT: Save acknowledgement number
+   Narrate: "Application submit ho gayi! Number save kar liya.
+   Status check karne ke liye kabhi bhi bolo."
+```
+
+### Prompt 6.6.9 — Water Bill Payment
+```
+Create lib/data/task_flows/water_bill_flow.dart:
+
+Task: Pay Water/Municipal Bill
+Target: Municipal corporation portal (state-specific)
+Slots Required: [consumerNumber, city]
+
+FLOW:
+1. SLOT_FILL: "Kaunse shehar ka paani ka bill hai?"
+   → Map to correct municipal portal
+2. SLOT_FILL: "Consumer number bolein ya bill pe se padh loon (camera)"
+3. OPEN_URL: Municipal portal
+4. TYPE: Consumer number
+5. CLICK: "View Bill"
+6. READ_SCREEN: Extract amount + due date
+   TTS: "₹450 ka paani ka bill hai. Due 15 March. Pay karein?"
+7. REDIRECT_UPI: Pre-fill amount
+8. WAIT: UPI PIN
+9. VERIFY: Payment complete
+   Narrate: "Paani ka bill pay ho gaya! Receipt save ho gayi."
+```
+
+### Prompt 6.6.10 — Voter ID (EPIC) Application
+```
+Create lib/data/task_flows/voter_id_flow.dart:
+
+Task: Apply for New Voter ID Card
+Target: https://voters.eci.gov.in/ (NVSP)
+Slots Required: [name, dob, address, state, constituency, aadhaarNumber, photo]
+
+FLOW:
+1. OPEN_URL: "https://voters.eci.gov.in/"
+   Narrate: "Voter ID ke liye NVSP website khol raha hoon..."
+2. CLICK: "New Registration" / "Form 6"
+3. SLOT_FILL_MULTI:
+   - Name, Father's name, DOB, Gender
+   - Address (current + permanent)
+   - Aadhaar number for eKYC
+4. TYPE_ALL: Fill Form 6 fields
+   Narrate: "Form bhar raha hoon step by step..."
+5. UPLOAD: Passport photo + ID proof
+   Narrate: "Photo select karo gallery se"
+6. CLICK: Submit with eKYC (Aadhaar OTP)
+7. WAIT_OTP: Auto-read Aadhaar OTP
+8. VERIFY: Reference number generated
+   Narrate: "Voter ID application submit! Reference number save ho gaya.
+   Verification ke liye BLO aayega 7-15 din mein."
+```
+
+### Prompt 6.6.11 — Passport Application
+```
+Create lib/data/task_flows/passport_flow.dart:
+
+Task: Apply for New Passport / Renewal
+Target: https://www.passportindia.gov.in/
+Slots Required: [name, dob, address, parent names, emergency contact, oldPassportNumber (renewal)]
+
+FLOW:
+1. OPEN_URL: Passport Seva portal
+   Narrate: "Passport Seva ki website khol raha hoon..."
+2. SLOT_FILL: "Naya passport chahiye ya purana renew karna hai?"
+3. CLICK: "New Passport" or "Re-issue"
+4. SLOT_FILL_MULTI: Extensive data collection:
+   - Personal: Name, DOB, birthplace, gender
+   - Family: Father, mother, spouse names
+   - Address: Present + permanent
+   - Emergency contact
+   - Old passport details (if renewal)
+   Narrate: "Bahut details chahiye passport ke liye. Ek ek karke batao."
+5. TYPE_ALL: Fill multi-page form
+   Narrate each section: "Personal details... Family details... Address..."
+6. CLICK: Submit form
+7. READ_SCREEN: Fee amount + appointment slots
+   TTS: "₹1,500 ka fee hai. Nearest passport office [city] mein.
+   Appointment [date] ko available hai. Book karein?"
+8. REDIRECT_PAYMENT: Online fee payment
+9. VERIFY: ARN (Application Reference Number) generated
+   Narrate: "Passport application submit! ARN save kar liya.
+   [Date] ko passport office jaana hai. Reminder set kar doon?"
+```
+
+### Prompt 6.6.12 — Driving License Application/Renewal
+```
+Create lib/data/task_flows/driving_license_flow.dart:
+
+Task: Apply for Learning/Driving License OR Renew
+Target: https://parivahan.gov.in/ (Sarathi portal)
+Slots Required: [name, dob, address, state, bloodGroup, aadhaarNumber, existingDLNumber (renewal)]
+
+FLOW:
+1. OPEN_URL: "https://sarathi.parivahan.gov.in/"
+   Narrate: "Driving license ke liye Sarathi portal khol raha hoon..."
+2. SLOT_FILL: "Kya chahiye — Learner license, permanent license, ya renewal?"
+3. SLOT_FILL: "Kaunsa state?" → Select state on portal
+4. CLICK: Appropriate service link
+5. SLOT_FILL_MULTI: Collect details
+6. TYPE_ALL: Fill form (personal, address, vehicle class)
+   Narrate: "Form bhar raha hoon..."
+7. UPLOAD: Photo, signature, documents
+8. CLICK: Submit
+9. READ_SCREEN: Fee + slot booking
+   TTS: "₹200 fee hai. RTO test slot [date] ko available.
+   Book karein?"
+10. REDIRECT_PAYMENT: Fee payment
+11. VERIFY: Application number
+    Narrate: "Application submit! RTO test ke liye [date] ko jaana hai."
+```
+
+### Prompt 6.6.13 — Income/Caste/Domicile Certificate
+```
+Create lib/data/task_flows/certificate_flow.dart:
+
+Task: Apply for Income / Caste / Domicile Certificate
+Target: State e-District portal (varies by state)
+Slots Required: [certificateType, name, fatherName, address, state, district, income (for income cert), caste (for caste cert)]
+
+FLOW:
+1. SLOT_FILL: "Kaunsa certificate chahiye — Income, Caste ya Domicile?"
+2. SLOT_FILL: "Kaunsa state?" → Map to state e-District portal
+   (e.g., UP → edistrict.up.gov.in, Bihar → serviceonline.bihar.gov.in)
+3. OPEN_URL: State portal
+   Narrate: "[Certificate] ke liye [state] portal khol raha hoon..."
+4. CLICK: Select certificate type
+5. SLOT_FILL_MULTI:
+   - Name, Father's name, DOB
+   - Address, District, Tehsil
+   - Annual income (for income cert)
+   - Caste / Sub-caste (for caste cert)
+6. TYPE_ALL: Fill form
+7. UPLOAD: Supporting documents (Aadhaar, ration card copy)
+8. CLICK: Submit
+9. READ_SCREEN: Application ID + fee
+   TTS: "Application submit ho gayi. ₹10 fee online pay karo."
+10. REDIRECT_PAYMENT
+11. VERIFY: Application tracking number
+    Narrate: "Certificate 7-15 din mein milega.
+    Status check karne ke liye kabhi bhi bolo."
+```
+
+### Prompt 6.6.14 — Scholarship Application
+```
+Create lib/data/task_flows/scholarship_flow.dart:
+
+Task: Apply for Government Scholarship
+Target: https://scholarships.gov.in/ (National Scholarship Portal)
+Slots Required: [name, dob, category, institution, course, year, bankAccount, aadhaarNumber, income]
+
+FLOW:
+1. OPEN_URL: "https://scholarships.gov.in/"
+   Narrate: "National Scholarship Portal khol raha hoon..."
+2. SLOT_FILL: "Kya padh rahe ho — school, college, ya kuch aur?"
+3. SLOT_FILL: "Category batao — SC, ST, OBC, Minority, ya General?"
+4. READ_SCREEN: Find eligible scholarships
+   TTS: "Aapke liye 3 scholarships mil rahe hain:
+   1. Post-Matric SC Scholarship — ₹25,000/year
+   2. Central Sector Scholarship — ₹10,000/year
+   3. [State] Merit Scholarship — ₹15,000/year
+   Kaunse ke liye apply karein?"
+5. USER_SELECT: Pick scholarship
+6. SLOT_FILL_MULTI: Collect all data
+   - Personal, Family income, Aadhaar
+   - Institution name, course, year of study
+   - Bank account (for direct benefit transfer)
+7. TYPE_ALL: Fill form
+8. UPLOAD: Marksheet, income certificate, caste certificate
+   Narrate: "Documents attach karo gallery se"
+9. CLICK: Submit
+10. VERIFY: Application number
+    Narrate: "Scholarship application submit! Track karne ke liye bolo.
+    Approval mein 30-60 din lagte hain."
+```
+
+### Prompt 6.6.15 — Online Shopping
+```
+Create lib/data/task_flows/online_shopping_flow.dart:
+
+Task: Search and Buy Product Online
+Target: Amazon / Flipkart / JioMart (user picks)
+Slots Required: [productQuery, platform, budget (optional)]
+
+FLOW:
+1. SLOT_FILL: "Kya kharidna hai? Detail mein bolein."
+   Example: "10 kg basmati chawal, ₹1,000 se kam"
+2. SLOT_FILL: "Amazon se lein, Flipkart se, ya sasta wala dhundhun?"
+3. OPEN_APP: Amazon/Flipkart via deep link or browser
+   Narrate: "Amazon pe dhundh raha hoon..."
+4. TYPE: Search query
+5. CLICK: Search
+6. READ_SCREEN: Extract top 3-5 results (name, price, rating)
+   TTS: "3 options mile:
+   1. Fortune Basmati — ₹780, 4.2 stars
+   2. India Gate — ₹950, 4.5 stars
+   3. Daawat — ₹870, 4.3 stars
+   Kaunsa loge?"
+7. USER_SELECT: Pick product
+8. CLICK: Product → "Add to Cart"
+9. CLICK: "Proceed to Checkout"
+10. READ_SCREEN: Check saved address
+    TTS: "Address sahi hai — [saved address]? Ya badalna hai?"
+11. USER_CONFIRM: Confirm address
+12. REDIRECT_PAYMENT: Checkout payment
+    Narrate: "₹780 pay karna hai. Payment method select karo."
+13. WAIT: User completes payment
+14. VERIFY: Order placed
+    Narrate: "Order placed! ₹780 ka Fortune Basmati chawal.
+    Delivery [date] tak. Order ID save kar liya."
 ```
 
 ---
@@ -2731,6 +4077,93 @@ Create robust notification architecture:
    - Call setup() in main.dart
    - Listen for token refresh -> update Supabase 'users' table
    - Handle 'click_action' payload for routing
+```
+
+### Prompt 12.3 — Permissions System
+```
+Implement contextual permission handling:
+
+1. android/app/src/main/AndroidManifest.xml — Add ALL permissions:
+
+   <!-- Auto-granted (no dialog) -->
+   <uses-permission android:name="android.permission.INTERNET" />
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+   <uses-permission android:name="android.permission.VIBRATE" />
+
+   <!-- Runtime permissions (dialog required) -->
+   <uses-permission android:name="android.permission.RECORD_AUDIO" />
+   <uses-permission android:name="android.permission.CAMERA" />
+   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+   <uses-permission android:name="android.permission.READ_SMS" />
+   <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+   <!-- Notifications (API 33+) -->
+   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+   <!-- Storage (pre-API 29 only, scoped storage handles modern) -->
+   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                    android:maxSdkVersion="28" />
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                    android:maxSdkVersion="28" />
+
+   <!-- LAM / Accessibility (special — user enables manually) -->
+   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+   <!-- BIND_ACCESSIBILITY_SERVICE declared via <service> tag -->
+
+2. lib/services/permissions/permission_service.dart:
+   - Uses permission_handler package
+   - Methods:
+     - requestMicrophone() -> bool
+     - requestCamera() -> bool
+     - requestLocation() -> bool
+     - requestNotifications() -> bool
+     - requestSmsRead() -> bool
+     - isAccessibilityEnabled() -> bool
+     - openAccessibilitySettings()
+     - isOverlayEnabled() -> bool
+     - openOverlaySettings()
+
+3. Permission Request Strategy (NEVER ask all upfront):
+
+   ON HOME SCREEN FIRST LAUNCH:
+   - Microphone (Required — show explanation first)
+   - Notifications (Optional — POST_NOTIFICATIONS on API 33+)
+
+   ON FIRST LAM TASK (user says "Aadhaar download karo"):
+   - Accessibility Service → Guide user to Settings with tutorial
+   - Overlay Permission → SYSTEM_ALERT_WINDOW for floating pill
+
+   ON CAMERA TAP (Profile avatar or bill scan):
+   - Camera permission
+
+   ON LOCAL SCHEME SEARCH:
+   - Location (coarse only)
+
+   ON OTP AUTO-READ (during LAM form filling):
+   - SMS Read permission (opt-in, explain why)
+
+4. lib/shared/widgets/dialogs/permission_dialog.dart:
+   - Luma-style bottom sheet (not system dialog)
+   - Shows BEFORE system permission dialog:
+     - Icon matching the permission (mic, camera, etc.)
+     - Title: "Sathio ko sunne do" (for mic)
+     - Description: Why this permission helps
+     - "Allow" button (black pill) → triggers system dialog
+     - "Not Now" link → graceful fallback
+
+5. lib/features/lam/accessibility_guide_screen.dart:
+   - Step-by-step visual guide to enable Accessibility Service
+   - Screenshots showing: Settings → Accessibility → Sathio → Enable
+   - "Open Settings" button (deep links to accessibility settings)
+   - Check status on return to app
+
+6. Fallback Behavior (when permission denied):
+   - Mic denied → Show text input keyboard
+   - Camera denied → Manual bill number entry
+   - Location denied → Manual state/district from profile
+   - SMS denied → Manual OTP entry (always works)
+   - Notifications denied → No push alerts (app still works)
+   - Accessibility denied → Cannot use LAM, show explainer
 ```
 
 ---
