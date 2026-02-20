@@ -40,36 +40,36 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   // Icons are larger, more colorful, with solid fills like Luma
   final List<_OrbitIcon> _icons = [
     // ── Outer ring (CCW) ──
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.location_on_rounded,
-      bgColor: const Color(0xFFE88DD6), // pink
+      bgColor: Color(0xFFE88DD6), // pink
       iconColor: Colors.white,
       orbitRadius: 1.05,
       startAngle: -0.3,
       size: 54,
       speed: -0.6,
     ),
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.volunteer_activism_rounded,
-      bgColor: const Color(0xFFFF7C6B), // coral
+      bgColor: Color(0xFFFF7C6B), // coral
       iconColor: Colors.white,
       orbitRadius: 1.0,
       startAngle: 1.2 * pi,
       size: 50,
       speed: -0.7,
     ),
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.public_rounded,
-      bgColor: const Color(0xFFAB7AE8), // lavender
+      bgColor: Color(0xFFAB7AE8), // lavender
       iconColor: Colors.white,
       orbitRadius: 1.08,
       startAngle: 0.55 * pi,
       size: 52,
       speed: -0.55,
     ),
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.people_alt_rounded,
-      bgColor: const Color(0xFF5BBFA0), // mint
+      bgColor: Color(0xFF5BBFA0), // mint
       iconColor: Colors.white,
       orbitRadius: 0.95,
       startAngle: 1.7 * pi,
@@ -78,27 +78,27 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     ),
 
     // ── Middle ring (CW) ──
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.calendar_month_rounded,
-      bgColor: const Color(0xFF6C7AE8), // periwinkle
+      bgColor: Color(0xFF6C7AE8), // periwinkle
       iconColor: Colors.white,
       orbitRadius: 0.72,
       startAngle: 0.85 * pi,
       size: 56,
       speed: 0.8,
     ),
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.celebration_rounded,
-      bgColor: const Color(0xFFFF9B5E), // orange
+      bgColor: Color(0xFFFF9B5E), // orange
       iconColor: Colors.white,
       orbitRadius: 0.68,
       startAngle: 1.85 * pi,
       size: 50,
       speed: 0.9,
     ),
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.person_rounded,
-      bgColor: const Color(0xFF5EB8E8), // sky blue
+      bgColor: Color(0xFF5EB8E8), // sky blue
       iconColor: Colors.white,
       orbitRadius: 0.75,
       startAngle: 0.2 * pi,
@@ -107,18 +107,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     ),
 
     // ── Inner ring (CCW) ──
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.account_balance_rounded,
-      bgColor: const Color(0xFF4DA6E8), // blue
+      bgColor: Color(0xFF4DA6E8), // blue
       iconColor: Colors.white,
       orbitRadius: 0.42,
       startAngle: 0.4 * pi,
       size: 44,
       speed: -1.0,
     ),
-    _OrbitIcon(
+    const _OrbitIcon(
       icon: Icons.mic_rounded,
-      bgColor: const Color(0xFF4DBFA5), // teal
+      bgColor: Color(0xFF4DBFA5), // teal
       iconColor: Colors.white,
       orbitRadius: 0.38,
       startAngle: 1.4 * pi,
@@ -395,9 +395,9 @@ class _OrbitRingsPainter extends CustomPainter {
 
     // 3 rings with thicker stroke
     final rings = [
-      _RingSpec(0.38, 1.8, const Color(0xFFE8E8E8)), // inner
-      _RingSpec(0.65, 2.2, const Color(0xFFE0E0E0)), // middle
-      _RingSpec(0.92, 2.5, const Color(0xFFD8D8D8)), // outer
+      const _RingSpec(0.38, 1.8, Color(0xFFE8E8E8)), // inner
+      const _RingSpec(0.65, 2.2, Color(0xFFE0E0E0)), // middle
+      const _RingSpec(0.92, 2.5, Color(0xFFD8D8D8)), // outer
     ];
 
     for (final ring in rings) {

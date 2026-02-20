@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // For sequence animations
 import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
+import '../../../../shared/widgets/buttons/buttons.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final Future<void> Function()? onGetStarted;
@@ -253,40 +254,25 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       const SizedBox(height: 24),
 
                       // Get Started Button
-                      SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (widget.onGetStarted != null) {
-                                  widget.onGetStarted!();
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF111111),
-                                foregroundColor: Colors.white,
-                                elevation: 5,
-                                shadowColor: Colors.black.withValues(
-                                  alpha: 0.2,
-                                ),
-                                shape: const StadiumBorder(),
-                              ),
-                              child: Text(
-                                'Get Started',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          )
-                          .animate(delay: 600.ms)
-                          .slideY(
-                            begin: 1.0,
-                            end: 0,
+                      Animate(
+                        delay: 600.ms,
+                        effects: [
+                          SlideEffect(
+                            begin: const Offset(0, 1.0),
+                            end: Offset.zero,
                             duration: 600.ms,
                             curve: Curves.easeOutBack,
                           ),
+                        ],
+                        child: PrimaryButton(
+                          onPressed: () {
+                            if (widget.onGetStarted != null) {
+                              widget.onGetStarted!();
+                            }
+                          },
+                          text: 'Get Started',
+                        ),
+                      ),
                     ],
                   ),
                 ),

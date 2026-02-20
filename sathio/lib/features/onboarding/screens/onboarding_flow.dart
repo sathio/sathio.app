@@ -9,8 +9,8 @@ import '../../../../core/utils/extensions.dart';
 // For Auth, Luma uses bottom sheet.
 // We will integrate Auth Test Screen logic or new screens here.
 import 'phone_input_screen.dart'; // New local import
+import 'interest_screen.dart'; // New local import
 import 'language_selection_screen.dart';
-import '../../home/screens/home_screen.dart';
 import '../../../../services/auth/auth_provider.dart';
 import '../../../../services/auth/auth_state.dart';
 import '../providers/onboarding_provider.dart';
@@ -96,7 +96,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
 
     return PopScope(
       canPop: onboardingState.currentIndex == 0,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         _back();
       },
@@ -184,7 +184,9 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                   ref.read(onboardingProvider.notifier).setGuest(true);
 
                   // Force close keyboard
-                  FocusScope.of(context).unfocus();
+                  if (context.mounted) {
+                    FocusScope.of(context).unfocus();
+                  }
 
                   // Small delay to ensure state update propagates
                   Future.delayed(const Duration(milliseconds: 50), () {
@@ -211,61 +213,12 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
             LanguageSelectionScreen(onContinue: _next),
 
             // 3. Profile Setup
-            // 3. Profile Setup
             ProfileSetupScreen(onContinue: _next, onBack: _back),
 
-            // 4. Interest Selection
-            _PlaceholderStep(title: 'Step 5: Interests', onNext: _next),
-
-            // 5. Voice Demo
-            _PlaceholderStep(title: 'Step 6: Voice Demo', onNext: _next),
-
-            // 6. Permissions
-            _PlaceholderStep(title: 'Step 7: Permissions', onNext: _next),
-
-            // 7. Home (Navigates out of flow)
-            _PlaceholderStep(
-              title: 'Step 8: All Set!',
-              onNext: () {
-                ref.read(onboardingProvider.notifier).completeOnboarding();
-                // Navigate to Home replacing Route
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
-                );
-              },
-              buttonText: 'Go Home',
-            ),
+            // 4. Interest Selection (Final Step - navigates to Home)
+            const InterestScreen(),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderStep extends StatelessWidget {
-  final String title;
-  final VoidCallback onNext;
-  final String buttonText;
-
-  const _PlaceholderStep({
-    required this.title,
-    required this.onNext,
-    this.buttonText = 'Next',
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(onPressed: onNext, child: Text(buttonText)),
-        ],
       ),
     );
   }

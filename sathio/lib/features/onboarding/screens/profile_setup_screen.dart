@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/india_data.dart';
 import '../providers/onboarding_provider.dart';
 import '../widgets/avatar_selector.dart';
+import '../../../../shared/widgets/buttons/buttons.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   final VoidCallback? onContinue;
@@ -255,45 +256,24 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen>
               const SizedBox(height: 48),
 
               // Save Profile Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: isFormValid
-                      ? () {
-                          // Save to provider
-                          ref
-                              .read(onboardingProvider.notifier)
-                              .updateProfile(
-                                avatarIndex: _avatarIndex,
-                                name: _nameController.text.trim(),
-                                stateName: _selectedState,
-                                district: _selectedDistrict,
-                              );
+              PrimaryButton(
+                onPressed: () {
+                  // Save to provider
+                  ref
+                      .read(onboardingProvider.notifier)
+                      .updateProfile(
+                        avatarIndex: _avatarIndex,
+                        name: _nameController.text.trim(),
+                        stateName: _selectedState,
+                        district: _selectedDistrict,
+                      );
 
-                          if (widget.onContinue != null) {
-                            widget.onContinue!();
-                          }
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF111111), // Black
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFF999999),
-                    disabledForegroundColor: const Color(
-                      0xFFFFFFFF,
-                    ).withValues(alpha: 0.5),
-                    elevation: 0,
-                    shape: const StadiumBorder(),
-                  ),
-                  child: Text(
-                    'Save Profile',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                  if (widget.onContinue != null) {
+                    widget.onContinue!();
+                  }
+                },
+                text: 'Save Profile',
+                isEnabled: isFormValid,
               ),
 
               const SizedBox(height: 16),

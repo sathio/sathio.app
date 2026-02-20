@@ -129,6 +129,17 @@ Based on Sathio's requirements (India-first, offline-capable, scalable, cost-eff
 | **OCR** | Google ML Kit (on-device) | Gemini Vision | Works offline |
 | **Device Control** | Android Accessibility Service | - | Built-in, free |
 
+### 4.2 Voice & Language (Hybrid Architecture)
+- **STT (Listening)**:
+  - **Sarvam AI**: `saaras:v3` model via `/speech-to-text` endpoint. Handles Hindi, Tamil, Telugu, Kannada, Marathi, etc.
+  - **Fallback**: Bhashini (if Sarvam fails/quota exceeded).
+- **TTS (Speaking)**:
+  - **ElevenLabs**: `eleven_multilingual_v2` model. Premium, human-like voice.
+  - **Fallback**: Sarvam AI (`bulbul:v1`) → Bhashini → System Default.
+- **Translation**:
+  - **Gemini 1.5 Flash**: Context-aware translation and intent understanding.
+  - **Bhashini**: Word-level fallback.
+
 > **Note:** Bhashini (free, govt, 22 languages) vs Sarvam AI (human-like voice, paid) — decision pending.
 > Build with service abstraction layer so voice provider can be swapped easily.
 
